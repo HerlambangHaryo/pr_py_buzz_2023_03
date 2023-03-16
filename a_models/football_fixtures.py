@@ -5,6 +5,7 @@ from a_models.api_odds import *
 from a_models.xpattern import *   
 from a_models.standings import *   
 from a_models.leagues import *   
+from a_models.patternlists_assestment import *  
 
 
 def ff_get_fixtures_for_reset_pattern(leagueapi_id, season, day0, prep_col, space):
@@ -159,6 +160,116 @@ def ff_get_fixture_today_xpattern_advices(day1, day2, ROUTES, space):
         if(ROUTES == 'xpattern'):
             xp_set_pattern(fixtureapi_id, 'pre_', 'yes', space)
     # ----------------------------------------------------------  
+
+def ff_get_fixture_status_match_finished_for_daily_update_patternlist(day1, day2, space):
+    # ----------------------------------------------------------   
+    space += "__"
+    # ---------------------------------------------------------- 
+    print(space + "ff_get_fixture_status_match_finished_for_daily_update_patternlist()", flush=True)
+    # ----------------------------------------------------------  
+    host="localhost"
+    user="root" 
+    database="pr_mmbuzz_2022_06"
+    mydb = mysql.connector.connect(host=host,user=user,password="",database=database)
+    mycursor = mydb.cursor()
+    # ----------------------------------------------------------  
+    query = "Select  "
+    query += " fixtureapi_id  " 
+    query += " , teams_home  " 
+    query += " , teams_away " 
+
+    query += " , leagueapi_id " 
+
+    query += " , pre_ah_pattern " 
+    query += " , pre_gou_pattern " 
+    query += " , end_ah_pattern " 
+    query += " , end_gou_pattern " 
+
+    query += " , season " 
+    query += " , pre_ah_pattern_mirror " 
+    query += " , end_ah_pattern_mirror " 
+    query += " , league_country " 
+    
+    query += " , end_odd_updated_at " 
+    query += " , fixture_status " 
+
+    query += " from football_fixtures "    
+    query += " where date <= '"+day2+"' "
+    query += " and date >= '"+day1+"' "  
+    query += " and end_odd_updated_at is not null "  
+    query += " and fixture_status in ('Match Finished', 'Match Finished Ended') " 
+    # ----------------------------------------------------------  
+    print(space + query, flush=True) 
+    # ----------------------------------------------------------   
+    mycursor = mydb.cursor()
+    mycursor.execute(query)
+    result =  mycursor.fetchall() 
+    # ----------------------------------------------------------     
+    space += "__"
+    total_rows = len(result)
+    # ----------------------------------------------------------    
+    print(space + "Total Row(s) : " + str(total_rows), flush=True) 
+    # ----------------------------------------------------------  
+    count_rows = 0
+    # ----------------------------------------------------------    
+    space += "__"
+    # ----------------------------------------------------------    
+    counter = 0
+    # ----------------------------------------------------------    
+    for x in result: 
+        # ------------------------------------------------------   
+        counter += 1
+        # ------------------------------------------------------  
+        fixtureapi_id = x[0]
+        teams_home = x[1]
+        teams_away = x[2]
+
+        leagueapi_id = x[3]
+
+        pre_ah_pattern      = x[4]
+        pre_gou_pattern     = x[5]
+        end_ah_pattern      = x[6]
+        end_gou_pattern     = x[7]
+
+        season     = x[8]
+
+        pre_ah_pattern_mirror      = x[9]
+        end_ah_pattern_mirror      = x[10]
+
+        league_country     = x[11]
+
+        end_odd_updated_at     = x[12]
+        fixture_status     = x[13]
+        # ------------------------------------------------------    
+        word = space + "[" + str(counter) + "/" +str(total_rows) + "] " + "#" + str(fixtureapi_id) + " "
+        word += "#" + str(league_country) + " " + str(leagueapi_id) + "-" + str(season) + " / "
+        word += str(teams_home) + " vs "
+        word += str(teams_away)  
+        print(word, flush=True)   
+        # ------------------------------------------------------  
+        word = space + "pre-ah:" + str(pre_ah_pattern) + " -- "
+        word += "pre-gou:" + str(pre_gou_pattern) + " -/- "
+        word += "end-ah:" + str(end_ah_pattern) + " -- "
+        word += "end-gou:" + str(end_gou_pattern)  
+        print(word, flush=True)   
+        # ------------------------------------------------------  
+        word = space + str(fixture_status) + " -- "
+        word += "end_odd_updated_at:" + str(end_odd_updated_at)  
+        print(word, flush=True)   
+        # ------------------------------------------------------   
+        print("", flush=True)
+        # ------------------------------------------------------  
+        pl_check_patternlist(leagueapi_id, league_country, 
+            pre_ah_pattern, pre_ah_pattern_mirror, pre_gou_pattern, 
+            end_ah_pattern, end_ah_pattern_mirror, end_gou_pattern, 
+            space)
+        print("", flush=True)
+        pa_assestment_daily_update(leagueapi_id, league_country, 
+            pre_ah_pattern, pre_ah_pattern_mirror, pre_gou_pattern, 
+            end_ah_pattern, end_ah_pattern_mirror, end_gou_pattern, 
+            space)
+        print("", flush=True)
+        # ------------------------------------------------------   
 
 def ff_get_fixture_status_match_finished(day1, day2, ROUTES, space):
     # ----------------------------------------------------------   
@@ -993,7 +1104,7 @@ def ff_get_league_group_next_match(day0, day1, space):
     query += " and date <= '"+day1+"' " 
     query += " and deleted_at is null "  
     # #603 
-    # query += " and leagueapi_id = 603 "  
+    # query += " where leagueapi_id in (2, 39) "  
     query += " group by leagueapi_id, league_name, league_country, season "
     query += " order by league_country, leagueapi_id asc  "  
     # query += " limit 0,3  "  

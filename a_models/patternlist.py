@@ -2,6 +2,80 @@
 import mysql.connector
 from a_models.patternlists_assestment import *  
 
+def pl_check_patternlist(leagueapi_id, league_country, 
+    pre_ah_pattern, pre_ah_pattern_mirror, pre_gou_pattern, 
+    end_ah_pattern, end_ah_pattern_mirror, end_gou_pattern, 
+    space):
+    # ----------------------------------------------------------   
+    space += "__"    
+    # ----------------------------------------------------------  
+    print(space + "pl_check_patternlist()", flush=True)
+    # ----------------------------------------------------------  
+    host="localhost"
+    user="root" 
+    database="pr_mmbuzz_2022_06"
+    mydb = mysql.connector.connect(host=host,user=user,password="",database=database)
+    mycursor = mydb.cursor()
+    # ----------------------------------------------------------  
+    query = " Select * " 
+    query += " from pattern_lists "     
+    query += " where leagueapi_id = '"+str(leagueapi_id)+"' "  
+    query += " and country = '"+str(league_country)+"' "
+
+    query += " and pre_ah_pattern = '"+str(pre_ah_pattern)+"' "  
+    query += " and pre_ah_pattern_mirror = '"+str(pre_ah_pattern_mirror)+"' " 
+    query += " and pre_gou_pattern = '"+str(pre_gou_pattern)+"' "  
+
+    query += " and end_ah_pattern = '"+str(end_ah_pattern)+"' "  
+    query += " and end_ah_pattern_mirror = '"+str(end_ah_pattern_mirror)+"' "  
+    query += " and end_gou_pattern = '"+str(end_gou_pattern)+"' "  
+    # ----------------------------------------------------------  
+    # print(space + query)
+    # ----------------------------------------------------------
+    mycursor = mydb.cursor()
+    mycursor.execute(query)
+    result =  mycursor.fetchall()
+    # ----------------------------------------------------------   
+    space += "__"
+    # ---------------------------------------------------------- 
+    total_rows = len(result)
+    # ----------------------------------------------------------    
+    print(space + "Total Row(s) : " + str(total_rows), flush=True) 
+    # ----------------------------------------------------------  
+    if(total_rows == 0): 
+        space += "__"
+        query = "INSERT INTO `pattern_lists`( "
+        query += " `country`, "
+        query += " `leagueapi_id`, "
+        query += " `pre_ah_pattern`, "
+        query += " `pre_ah_pattern_mirror`, " 
+        query += " `pre_gou_pattern`, "
+        query += " `end_ah_pattern`, "
+        query += " `end_ah_pattern_mirror`, "
+        query += " `end_gou_pattern`"
+        query += " ) VALUES ( "
+        query += " '"+str(league_country)+"', "
+        query += " '"+str(leagueapi_id)+"', "
+        # -------------------------------------------------- 
+        query += " '"+str(pre_ah_pattern)+"', "
+        query += " '"+str(pre_ah_pattern_mirror)+"', "
+        query += " '"+str(pre_gou_pattern)+"', "
+        # -------------------------------------------------- 
+        query += " '"+str(end_ah_pattern)+"', "
+        query += " '"+str(end_ah_pattern_mirror)+"', "
+        query += " '"+str(end_gou_pattern)+"' "
+        query += " ) "
+        # -------------------------------------------------- 
+        mycursor.execute(query)
+        mydb.commit() 
+        print(space + "__insert commited")
+    if(total_rows != 0): 
+        print(space + "__Already Data")
+    # ----------------------------------------------------------     
+    # ----------------------------------------------------------     
+    # ----------------------------------------------------------        
+    
+
 def pl_updating_all_leagues_to_patternlist():
     # ----------------------------------------------------------  
     host="localhost"

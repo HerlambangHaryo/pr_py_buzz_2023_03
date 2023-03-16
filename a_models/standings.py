@@ -160,7 +160,7 @@ def st_get_team_update_stats(fixtureapi_id, leagueapi_id, season, teamapi_id, st
     query += " and season = '"+str(season)+"' "  
     query += " and teamapi_id = '"+str(teamapi_id)+"' "   
     # ----------------------------------------------------------   
-    # print(space + query)
+    print(space + query)
     # ----------------------------------------------------------   
     mycursor = mydb.cursor()
     mycursor.execute(query)
@@ -491,9 +491,10 @@ def st_update_standing(leagueapi_id, season, teams_id, name, space):
         goals_againts_home = 0
         goals_againts_away = 0 
         # ------------------------------------------------------
-        counter_col = 0
         # ------------------------------------------------------   
         for x in myresult:   
+            # --------------------------------------------------
+            counter_col = 0
             # --------------------------------------------------
             teamapi_id   = x[counter_col]
 
