@@ -124,6 +124,51 @@ def st_get_team_barely_updated(leagueapi_id, season, today, space):
         st_update_standing(leagueapi_id, season, teams_id, name, space)
     # ----------------------------------------------------------    
 
+def st_get_team_direct_updated(leagueapi_id, season, space): 
+    # ----------------------------------------------------------   
+    space += "__"
+    # ----------------------------------------------------------  
+    print(space + "st_get_team_direct_updated()")
+    # ----------------------------------------------------------   
+    space += "__"
+    # ----------------------------------------------------------  
+    host="localhost"
+    user="root" 
+    database="pr_mmbuzz_2022_06"
+    mydb = mysql.connector.connect(host=host,user=user,password="",database=database)
+    mycursor = mydb.cursor()
+    # ---------------------------------------------------------- 
+    query = "Select teamapi_id, name, Date(updated_data_at) "   
+    query += " from standings " 
+    query += " where leagueapi_id = '"+str(leagueapi_id)+"' " 
+    query += " and season = '"+str(season)+"' "    
+    # ----------------------------------------------------------   
+    # print(space + query)
+    # ----------------------------------------------------------  
+    mycursor = mydb.cursor()
+    mycursor.execute(query)
+    result =  mycursor.fetchall()
+    # ----------------------------------------------------------    
+    print(space + "Total Row(s) : " + str(len(result)), flush=True) 
+    total_rows = len(result)
+    # ----------------------------------------------------------  
+    counter = 0
+    # ----------------------------------------------------------   
+    space += "__"
+    # ----------------------------------------------------------    
+    for x in result:     
+        # ------------------------------------------------------
+        counter        += 1
+        teams_id   = str(x[0])  
+        name   = str(x[1])  
+        updated_data_at   = str(x[2])  
+        # ------------------------------------------------------
+        word = space + "[" + str(counter) + "/" +str(len(result)) + "] " + teams_id + " - "
+        word += updated_data_at
+        print(word, flush=True)   
+        # ------------------------------------------------------
+        st_update_standing(leagueapi_id, season, teams_id, name, space)
+    # ----------------------------------------------------------  
 
 def st_get_team_update_stats(fixtureapi_id, leagueapi_id, season, teamapi_id, status_match, space): 
     # ----------------------------------------------------------   
@@ -447,9 +492,15 @@ def st_update_standing(leagueapi_id, season, teams_id, name, space):
     # ----------------------------------------------------------
     # ------------------------------------------------------   
     if(response_length > 0):
+        # ------------------------------------------------------ 
         match_played = 0
         match_played_home = 0
         match_played_away = 0
+        # ------------------------------------------------------ 
+        match_played_api = 0
+        match_played_api_home = 0
+        match_played_api_away = 0
+        # ------------------------------------------------------ 
         goals_total = 0
         win = 0
         draw = 0 
@@ -491,11 +542,145 @@ def st_update_standing(leagueapi_id, season, teams_id, name, space):
         goals_againts_home = 0
         goals_againts_away = 0 
         # ------------------------------------------------------
+        shot_on_goals_for = 0
+        shot_on_goals_for_ratio = 0
+        shot_on_goals_for_home = 0
+        shot_on_goals_for_home_ratio = 0
+        shot_on_goals_for_away = 0
+        shot_on_goals_for_away_ratio = 0
+        shot_on_goals_againts = 0
+        shot_on_goals_againts_ratio = 0
+        shot_on_goals_againts_home = 0
+        shot_on_goals_againts_home_ratio = 0
+        shot_on_goals_againts_away = 0
+        shot_on_goals_againts_away_ratio = 0
+        shot_off_goals_for = 0
+        shot_off_goals_for_ratio = 0
+        shot_off_goals_for_home = 0
+        shot_off_goals_for_home_ratio = 0
+        shot_off_goals_for_away = 0
+        shot_off_goals_for_away_ratio = 0
+        shot_off_goals_againts = 0
+        shot_off_goals_againts_ratio = 0
+        shot_off_goals_againts_home = 0
+        shot_off_goals_againts_home_ratio = 0
+        shot_off_goals_againts_away = 0
+        shot_off_goals_againts_away_ratio = 0
+        total_shots_for = 0
+        total_shots_for_ratio = 0
+        total_shots_for_home = 0
+        total_shots_for_home_ratio = 0
+        total_shots_for_away = 0
+        total_shots_for_away_ratio = 0
+        total_shots_againts = 0
+        total_shots_againts_ratio = 0
+        total_shots_againts_home = 0
+        total_shots_againts_home_ratio = 0
+        total_shots_againts_away = 0
+        total_shots_againts_away_ratio = 0
+        shot_inside_box_for = 0
+        shot_inside_box_for_ratio = 0
+        shot_inside_box_for_home = 0
+        shot_inside_box_for_home_ratio = 0
+        shot_inside_box_for_away = 0
+        shot_inside_box_for_away_ratio = 0
+        shot_inside_box_againts = 0
+        shot_inside_box_againts_ratio = 0
+        shot_inside_box_againts_home = 0
+        shot_inside_box_againts_home_ratio = 0
+        shot_inside_box_againts_away = 0
+        shot_inside_box_againts_away_ratio = 0
+        shot_outside_box_for = 0
+        shot_outside_box_for_ratio = 0
+        shot_outside_box_for_home = 0
+        shot_outside_box_for_home_ratio = 0
+        shot_outside_box_for_away = 0
+        shot_outside_box_for_away_ratio = 0
+        shot_outside_box_againts = 0
+        shot_outside_box_againts_ratio = 0
+        shot_outside_box_againts_home = 0
+        shot_outside_box_againts_home_ratio = 0
+        shot_outside_box_againts_away = 0
+        shot_outside_box_againts_away_ratio = 0
+        fouls_for = 0
+        fouls_for_ratio = 0
+        fouls_for_home = 0
+        fouls_for_home_ratio = 0
+        fouls_for_away = 0
+        fouls_for_away_ratio = 0
+        fouls_againts = 0
+        fouls_againts_ratio = 0
+        fouls_againts_home = 0
+        fouls_againts_home_ratio = 0
+        fouls_againts_away = 0
+        fouls_againts_away_ratio = 0
+
+
+        corner_kicks_for = 0
+        corner_kicks_for_ratio = 0
+        corner_kicks_for_home = 0
+        corner_kicks_for_home_ratio = 0
+        corner_kicks_for_away = 0
+        corner_kicks_for_away_ratio = 0
+        corner_kicks_againts = 0
+        corner_kicks_againts_ratio = 0
+        corner_kicks_againts_home = 0
+        corner_kicks_againts_home_ratio = 0
+        corner_kicks_againts_away = 0
+        corner_kicks_againts_away_ratio = 0
+
+        corner_kicks_total = 0
+        corner_kicks_avg_per_match = 0
+
+
+        offsides_for = 0
+        offsides_for_ratio = 0
+        offsides_for_home = 0
+        offsides_for_home_ratio = 0
+        offsides_for_away = 0
+        offsides_for_away_ratio = 0
+        offsides_againts = 0
+        offsides_againts_ratio = 0
+        offsides_againts_home = 0
+        offsides_againts_home_ratio = 0
+        offsides_againts_away = 0
+        offsides_againts_away_ratio = 0
+        yellow_cards_for = 0
+        yellow_cards_for_ratio = 0
+        yellow_cards_for_home = 0
+        yellow_cards_for_home_ratio = 0
+        yellow_cards_for_away = 0
+        yellow_cards_for_away_ratio = 0
+        yellow_cards_againts = 0
+        yellow_cards_againts_ratio = 0
+        yellow_cards_againts_home = 0
+        yellow_cards_againts_home_ratio = 0
+        yellow_cards_againts_away = 0
+        yellow_cards_againts_away_ratio = 0
+        
+        yellow_cards_total = 0
+        yellow_cards_avg_per_match = 0
+
+        red_cards_for = 0
+        red_cards_for_ratio = 0
+        red_cards_for_home = 0
+        red_cards_for_home_ratio = 0
+        red_cards_for_away = 0
+        red_cards_for_away_ratio = 0
+        red_cards_againts = 0
+        red_cards_againts_ratio = 0
+        red_cards_againts_home = 0
+        red_cards_againts_home_ratio = 0
+        red_cards_againts_away = 0
+        red_cards_againts_away_ratio = 0
+ 
+        red_cards_total = 0
+        red_cards_avg_per_match = 0
+        # ------------------------------------------------------ 
         # ------------------------------------------------------   
         for x in myresult:   
             # --------------------------------------------------
             counter_col = 0
-            # --------------------------------------------------
             teamapi_id   = x[counter_col]
 
             counter_col += 1
@@ -742,13 +927,14 @@ def st_update_standing(leagueapi_id, season, teams_id, name, space):
                         form_defeatable_home_counter += 1
                         # ------------------------------------------
                     # ---------------------------------------------- 
-                    goals_for += goals_home
-                    goals_againts += goals_away
-                    goals_for_home = goals_home + goals_for_home
-                    goals_againts_home = goals_away + goals_againts_home
+                    goals_for       += goals_home
+                    goals_againts   += goals_away
+
+                    goals_for_home      = goals_home + goals_for_home
+                    goals_againts_away  = goals_away + goals_againts_away
+ 
                     match_played_home += 1 
-                    # ----------------------------------------------
-                # --------------------------------------------------
+                    # ---------------------------------------------- 
                 elif(status == 'away'):
                     # ---------------------------------------------- 
                     if(goals_home < goals_away):
@@ -819,11 +1005,13 @@ def st_update_standing(leagueapi_id, season, teams_id, name, space):
                         form_defeatable_away_counter += 1
                         # ------------------------------------------ 
                     # ---------------------------------------------- 
-                    goals_againts += goals_home
-                    goals_for += goals_away
-                    goals_for_away = goals_away + goals_for_away
-                    goals_againts_away = goals_home + goals_againts_away
-                    match_played_away += 1
+                    goals_againts       += goals_home
+                    goals_for           += goals_away
+                    
+                    goals_for_away      = goals_home + goals_for_away
+                    goals_againts_home  = goals_away + goals_againts_home
+
+                    match_played_away   += 1
                     # ---------------------------------------------- 
                 # --------------------------------------------------
             # --------------------------------------------------
@@ -831,6 +1019,105 @@ def st_update_standing(leagueapi_id, season, teams_id, name, space):
             #     score_secondtime
             #     if(status == 'home'): 
             #     elif(status == 'away'): 
+            # --------------------------------------------------
+            if(shots_on_goal_home is not None):   
+                match_played_api += 1
+
+                # ----------------------------------------------------------------------------------------- corner_kicks
+                corner_kicks_home_temp = 0
+                if(corner_kicks_home is not None):
+                    corner_kicks_home_temp = corner_kicks_home
+ 
+                corner_kicks_away_temp = 0
+                if(corner_kicks_away is not None):
+                    corner_kicks_away_temp = corner_kicks_away
+                    
+                corner_kicks_total += corner_kicks_home_temp + corner_kicks_away_temp
+                
+                # ----------------------------------------------------------------------------------------- yellow_cards
+                yellow_cards_home_temp = 0
+                if(yellow_cards_home is not None):
+                    yellow_cards_home_temp = yellow_cards_home
+ 
+                yellow_cards_away_temp = 0
+                if(yellow_cards_away is not None):
+                    yellow_cards_away_temp = yellow_cards_away
+                    
+                yellow_cards_total += yellow_cards_home_temp + yellow_cards_away_temp
+                
+                # ----------------------------------------------------------------------------------------- red_cards
+                red_cards_home_temp = 0
+                if(red_cards_home is not None):
+                    red_cards_home_temp = red_cards_home
+ 
+                red_cards_away_temp = 0
+                if(red_cards_away is not None):
+                    red_cards_away_temp = red_cards_away
+                    
+                red_cards_total += red_cards_home_temp + red_cards_away_temp
+                # ----------------------------------------------------------------------------------------- 
+
+                if(status == 'home'): 
+                    match_played_api_home += 1 
+                    # ----------------------------------------------------------------------------------------- corner_kicks
+                    # corner_kicks_for                += corner_kicks_home_temp
+                    # corner_kicks_for_home           += corner_kicks_home_temp + corner_kicks_for_home
+
+                    # corner_kicks_againts            += corner_kicks_away_temp
+                    # corner_kicks_againts_home       += corner_kicks_away_temp + corner_kicks_againts_home 
+ 
+                    corner_kicks_for       += corner_kicks_home_temp
+                    corner_kicks_againts   += corner_kicks_away_temp
+
+                    corner_kicks_for_home      = corner_kicks_home_temp + corner_kicks_for_home
+                    corner_kicks_againts_away  = corner_kicks_away_temp + corner_kicks_againts_away
+
+                    # ----------------------------------------------------------------------------------------- yellow_cards
+                    
+                    yellow_cards_for       += yellow_cards_home_temp
+                    yellow_cards_againts   += yellow_cards_away_temp
+
+                    yellow_cards_for_home      = yellow_cards_home_temp + yellow_cards_for_home
+                    yellow_cards_againts_away  = yellow_cards_away_temp + yellow_cards_againts_away
+                    # ----------------------------------------------------------------------------------------- red_cards
+                    
+                    red_cards_for       += red_cards_home_temp
+                    red_cards_againts   += red_cards_away_temp
+
+                    red_cards_for_home      = red_cards_home_temp + red_cards_for_home
+                    red_cards_againts_away  = red_cards_away_temp + red_cards_againts_away 
+                    # -----------------------------------------------------------------------------------------
+                     
+                elif(status == 'away'): 
+                    match_played_api_away += 1 
+                    # ----------------------------------------------------------------------------------------- corner_kicks
+                    # corner_kicks_for                += corner_kicks_away_temp 
+                    # corner_kicks_for_away           += corner_kicks_away_temp + corner_kicks_for_away
+ 
+                    # corner_kicks_againts            += corner_kicks_home_temp
+                    # corner_kicks_againts_away       += corner_kicks_home_temp + corner_kicks_againts_away 
+
+                    
+                    corner_kicks_againts       += corner_kicks_home_temp
+                    corner_kicks_for           += corner_kicks_away_temp
+                    
+                    corner_kicks_for_away      = corner_kicks_home_temp + corner_kicks_for_away
+                    corner_kicks_againts_home  = corner_kicks_away_temp + corner_kicks_againts_home
+                    # ----------------------------------------------------------------------------------------- yellow_cards
+                    yellow_cards_againts       += yellow_cards_home_temp
+                    yellow_cards_for           += yellow_cards_away_temp
+                    
+                    yellow_cards_for_away      = yellow_cards_home_temp + yellow_cards_for_away
+                    yellow_cards_againts_home  = yellow_cards_away_temp + yellow_cards_againts_home 
+                    # ----------------------------------------------------------------------------------------- red_cards
+                    red_cards_againts       += red_cards_home_temp
+                    red_cards_for           += red_cards_away_temp
+                    
+                    red_cards_for_away      = red_cards_home_temp + red_cards_for_away
+                    red_cards_againts_home  = red_cards_away_temp + red_cards_againts_home 
+                    # -----------------------------------------------------------------------------------------
+
+
         # ------------------------------------------------------  
         goals_substract = goals_for - goals_againts
         # ------------------------------------------------------   
@@ -845,6 +1132,12 @@ def st_update_standing(leagueapi_id, season, teams_id, name, space):
         update = " UPDATE `standings` SET  "
         # ------------------------------------------------------  
         update += " `match_played` = '"+str(match_played)+"', "
+        update += " `match_played_home` = '"+str(match_played_home)+"', "
+        update += " `match_played_away` = '"+str(match_played_away)+"', "
+        # ------------------------------------------------------  
+        update += " `match_played_api` = '"+str(match_played_api)+"', "
+        update += " `match_played_api_home` = '"+str(match_played_api_home)+"', "
+        update += " `match_played_api_away` = '"+str(match_played_api_away)+"', "
         # ------------------------------------------------------  
         update += " `win` = '"+str(win)+"', "
         update += " `draw` = '"+str(draw)+"', "
@@ -866,7 +1159,20 @@ def st_update_standing(leagueapi_id, season, teams_id, name, space):
         goals_for_home_ratio = 0
         if(match_played_home != 0):
             goals_for_home_ratio = goals_for_home / match_played_home
-            update += " `goals_for_home_ratio` = '"+str(goals_for_home_ratio)+"', "
+            update += " `goals_for_home_ratio` = '"+str(goals_for_home_ratio)+"', " 
+        # ------------------------------------------------------
+        update += " `goals_againts_away` = '"+str(goals_againts_away)+"', "
+        goals_againts_away_ratio = 0
+        if(match_played_home != 0):
+            goals_againts_away_ratio = goals_againts_away / match_played_home
+            update += " `goals_againts_away_ratio` = '"+str(goals_againts_away_ratio)+"', " 
+        # ------------------------------------------------------
+        #  
+        #  
+        # ------------------------------------------------------
+        update += " `goals_againts` = '"+str(goals_againts)+"', "
+        if(match_played != 0):
+            update += " `goals_againts_ratio` = '"+str(goals_againts / match_played)+"', " 
         # ------------------------------------------------------
         update += " `goals_for_away` = '"+str(goals_for_away)+"', "
         goals_for_away_ratio = 0
@@ -874,27 +1180,11 @@ def st_update_standing(leagueapi_id, season, teams_id, name, space):
             goals_for_away_ratio = goals_for_away / match_played_away
             update += " `goals_for_away_ratio` = '"+str(goals_for_away_ratio)+"', " 
         # ------------------------------------------------------
-        #  
-        # 
-        # 
-        # 
-        #  
-        # ------------------------------------------------------
-        update += " `goals_againts` = '"+str(goals_againts)+"', "
-        if(match_played != 0):
-            update += " `goals_againts_ratio` = '"+str(goals_againts / match_played)+"', " 
-        # ------------------------------------------------------
         update += " `goals_againts_home` = '"+str(goals_againts_home)+"', "
         goals_againts_home_ratio = 0
-        if(match_played_home != 0):
-            goals_againts_home_ratio = goals_againts_home / match_played_home
-            update += " `goals_againts_home_ratio` = '"+str(goals_againts_home_ratio)+"', "
-        # ------------------------------------------------------
-        update += " `goals_againts_away` = '"+str(goals_againts_away)+"', "
-        goals_againts_away_ratio = 0
         if(match_played_away != 0):
-            goals_againts_away_ratio = goals_againts_away / match_played_away
-            update += " `goals_againts_away_ratio` = '"+str(goals_againts_away_ratio)+"', "
+            goals_againts_home_ratio = goals_againts_home / match_played_away
+            update += " `goals_againts_home_ratio` = '"+str(goals_againts_home_ratio)+"', "
         # ------------------------------------------------------
         #  
         # 
@@ -963,6 +1253,264 @@ def st_update_standing(leagueapi_id, season, teams_id, name, space):
         # ------------------------------------------------------
         update += " `form_total_away` = '"+str(form_total_away)+"', " 
         # ------------------------------------------------------
+        #  
+        # 
+        # 
+        # 
+        #  
+        # ------------------------------------------------------
+        update += " `shot_on_goals_for` = '"+str(shot_on_goals_for)+"', "  
+        update += " `shot_on_goals_for_ratio` = '"+str(shot_on_goals_for_ratio)+"', "  
+        update += " `shot_on_goals_for_home` = '"+str(shot_on_goals_for_home)+"', "  
+        update += " `shot_on_goals_for_home_ratio` = '"+str(shot_on_goals_for_home_ratio)+"', "  
+        update += " `shot_on_goals_for_away` = '"+str(shot_on_goals_for_away)+"', "  
+        update += " `shot_on_goals_for_away_ratio` = '"+str(shot_on_goals_for_away_ratio)+"', "  
+        # ------------------------------------------------------
+        update += " `shot_on_goals_againts` = '"+str(shot_on_goals_againts)+"', "  
+        update += " `shot_on_goals_againts_ratio` = '"+str(shot_on_goals_againts_ratio)+"', "  
+        update += " `shot_on_goals_againts_home` = '"+str(shot_on_goals_againts_home)+"', "  
+        update += " `shot_on_goals_againts_home_ratio` = '"+str(shot_on_goals_againts_home_ratio)+"', "  
+        update += " `shot_on_goals_againts_away` = '"+str(shot_on_goals_againts_away)+"', "  
+        update += " `shot_on_goals_againts_away_ratio` = '"+str(shot_on_goals_againts_away_ratio)+"', "  
+        # ------------------------------------------------------
+        update += " `shot_off_goals_for` = '"+str(shot_off_goals_for)+"', "  
+        update += " `shot_off_goals_for_ratio` = '"+str(shot_off_goals_for_ratio)+"', "  
+        update += " `shot_off_goals_for_home` = '"+str(shot_off_goals_for_home)+"', "  
+        update += " `shot_off_goals_for_home_ratio` = '"+str(shot_off_goals_for_home_ratio)+"', "  
+        update += " `shot_off_goals_for_away` = '"+str(shot_off_goals_for_away)+"', "  
+        update += " `shot_off_goals_for_away_ratio` = '"+str(shot_off_goals_for_away_ratio)+"', "  
+        # ------------------------------------------------------
+        update += " `shot_off_goals_againts` = '"+str(shot_off_goals_againts)+"', "  
+        update += " `shot_off_goals_againts_ratio` = '"+str(shot_off_goals_againts_ratio)+"', "  
+        update += " `shot_off_goals_againts_home` = '"+str(shot_off_goals_againts_home)+"', "  
+        update += " `shot_off_goals_againts_home_ratio` = '"+str(shot_off_goals_againts_home_ratio)+"', "  
+        update += " `shot_off_goals_againts_away` = '"+str(shot_off_goals_againts_away)+"', "  
+        update += " `shot_off_goals_againts_away_ratio` = '"+str(shot_off_goals_againts_away_ratio)+"', "  
+        # ------------------------------------------------------
+        update += " `total_shots_for` = '"+str(total_shots_for)+"', "  
+        update += " `total_shots_for_ratio` = '"+str(total_shots_for_ratio)+"', "  
+        update += " `total_shots_for_home` = '"+str(total_shots_for_home)+"', "  
+        update += " `total_shots_for_home_ratio` = '"+str(total_shots_for_home_ratio)+"', "  
+        update += " `total_shots_for_away` = '"+str(total_shots_for_away)+"', "  
+        update += " `total_shots_for_away_ratio` = '"+str(total_shots_for_away_ratio)+"', "  
+        # ------------------------------------------------------
+        update += " `total_shots_againts` = '"+str(total_shots_againts)+"', "  
+        update += " `total_shots_againts_ratio` = '"+str(total_shots_againts_ratio)+"', "  
+        update += " `total_shots_againts_home` = '"+str(total_shots_againts_home)+"', "  
+        update += " `total_shots_againts_home_ratio` = '"+str(total_shots_againts_home_ratio)+"', "  
+        update += " `total_shots_againts_away` = '"+str(total_shots_againts_away)+"', "  
+        update += " `total_shots_againts_away_ratio` = '"+str(total_shots_againts_away_ratio)+"', "  
+        # ------------------------------------------------------
+        update += " `shot_inside_box_for` = '"+str(shot_inside_box_for)+"', "  
+        update += " `shot_inside_box_for_ratio` = '"+str(shot_inside_box_for_ratio)+"', "  
+        update += " `shot_inside_box_for_home` = '"+str(shot_inside_box_for_home)+"', "  
+        update += " `shot_inside_box_for_home_ratio` = '"+str(shot_inside_box_for_home_ratio)+"', "  
+        update += " `shot_inside_box_for_away` = '"+str(shot_inside_box_for_away)+"', "  
+        update += " `shot_inside_box_for_away_ratio` = '"+str(shot_inside_box_for_away_ratio)+"', "  
+        # ------------------------------------------------------
+        update += " `shot_inside_box_againts` = '"+str(shot_inside_box_againts)+"', "  
+        update += " `shot_inside_box_againts_ratio` = '"+str(shot_inside_box_againts_ratio)+"', "  
+        update += " `shot_inside_box_againts_home` = '"+str(shot_inside_box_againts_home)+"', "  
+        update += " `shot_inside_box_againts_home_ratio` = '"+str(shot_inside_box_againts_home_ratio)+"', "  
+        update += " `shot_inside_box_againts_away` = '"+str(shot_inside_box_againts_away)+"', "  
+        update += " `shot_inside_box_againts_away_ratio` = '"+str(shot_inside_box_againts_away_ratio)+"', "  
+        # ------------------------------------------------------
+        update += " `shot_outside_box_for` = '"+str(shot_outside_box_for)+"', "  
+        update += " `shot_outside_box_for_ratio` = '"+str(shot_outside_box_for_ratio)+"', "  
+        update += " `shot_outside_box_for_home` = '"+str(shot_outside_box_for_home)+"', "  
+        update += " `shot_outside_box_for_home_ratio` = '"+str(shot_outside_box_for_home_ratio)+"', "  
+        update += " `shot_outside_box_for_away` = '"+str(shot_outside_box_for_away)+"', "  
+        update += " `shot_outside_box_for_away_ratio` = '"+str(shot_outside_box_for_away_ratio)+"', "  
+        # ------------------------------------------------------
+        update += " `shot_outside_box_againts` = '"+str(shot_outside_box_againts)+"', "  
+        update += " `shot_outside_box_againts_ratio` = '"+str(shot_outside_box_againts_ratio)+"', "  
+        update += " `shot_outside_box_againts_home` = '"+str(shot_outside_box_againts_home)+"', "  
+        update += " `shot_outside_box_againts_home_ratio` = '"+str(shot_outside_box_againts_home_ratio)+"', "  
+        update += " `shot_outside_box_againts_away` = '"+str(shot_outside_box_againts_away)+"', "  
+        update += " `shot_outside_box_againts_away_ratio` = '"+str(shot_outside_box_againts_away_ratio)+"', "  
+        # ------------------------------------------------------
+        update += " `fouls_for` = '"+str(fouls_for)+"', "  
+        update += " `fouls_for_ratio` = '"+str(fouls_for_ratio)+"', "  
+        update += " `fouls_for_home` = '"+str(fouls_for_home)+"', "  
+        update += " `fouls_for_home_ratio` = '"+str(fouls_for_home_ratio)+"', "  
+        update += " `fouls_for_away` = '"+str(fouls_for_away)+"', "  
+        update += " `fouls_for_away_ratio` = '"+str(fouls_for_away_ratio)+"', "  
+        # ------------------------------------------------------
+        update += " `fouls_againts` = '"+str(fouls_againts)+"', "  
+        update += " `fouls_againts_ratio` = '"+str(fouls_againts_ratio)+"', "  
+        update += " `fouls_againts_home` = '"+str(fouls_againts_home)+"', "  
+        update += " `fouls_againts_home_ratio` = '"+str(fouls_againts_home_ratio)+"', "  
+        update += " `fouls_againts_away` = '"+str(fouls_againts_away)+"', "  
+        update += " `fouls_againts_away_ratio` = '"+str(fouls_againts_away_ratio)+"', "  
+        # ------------------------------------------------------------------------------------------- corner_kicks 
+        update += " `corner_kicks_for` = '"+str(corner_kicks_for)+"', "
+        if(match_played_api != 0):
+            update += " `corner_kicks_for_ratio` = '"+str(corner_kicks_for / match_played_api)+"', "
+        # ------------------------------------------------------
+        update += " `corner_kicks_for_home` = '"+str(corner_kicks_for_home)+"', "
+        corner_kicks_for_home_ratio = 0
+        if(match_played_api_home != 0):
+            corner_kicks_for_home_ratio = corner_kicks_for_home / match_played_api_home
+            update += " `corner_kicks_for_home_ratio` = '"+str(corner_kicks_for_home_ratio)+"', " 
+        # ------------------------------------------------------
+        update += " `corner_kicks_againts_away` = '"+str(corner_kicks_againts_away)+"', "
+        corner_kicks_againts_away_ratio = 0
+        if(match_played_api_home != 0):
+            corner_kicks_againts_away_ratio = corner_kicks_againts_away / match_played_api_home
+            update += " `corner_kicks_againts_away_ratio` = '"+str(corner_kicks_againts_away_ratio)+"', " 
+        # ------------------------------------------------------
+        #  
+        #  
+        # ------------------------------------------------------
+        update += " `corner_kicks_againts` = '"+str(corner_kicks_againts)+"', "
+        if(match_played_api != 0):
+            update += " `corner_kicks_againts_ratio` = '"+str(corner_kicks_againts / match_played_api)+"', " 
+        # ------------------------------------------------------
+        update += " `corner_kicks_for_away` = '"+str(corner_kicks_for_away)+"', "
+        corner_kicks_for_away_ratio = 0
+        if(match_played_api_away != 0):
+            corner_kicks_for_away_ratio = corner_kicks_for_away / match_played_api_away
+            update += " `corner_kicks_for_away_ratio` = '"+str(corner_kicks_for_away_ratio)+"', " 
+        # ------------------------------------------------------
+        update += " `corner_kicks_againts_home` = '"+str(corner_kicks_againts_home)+"', "
+        corner_kicks_againts_home_ratio = 0
+        if(match_played_api_away != 0):
+            corner_kicks_againts_home_ratio = corner_kicks_againts_home / match_played_api_away
+            update += " `corner_kicks_againts_home_ratio` = '"+str(corner_kicks_againts_home_ratio)+"', "
+        # ------------------------------------------------------
+
+        # update += " `corner_kicks_for` = '"+str(corner_kicks_for)+"', " 
+        # update += " `corner_kicks_againts` = '"+str(corner_kicks_againts)+"', "    
+
+        # update += " `corner_kicks_for_home` = '"+str(corner_kicks_for_home)+"', "  
+        # update += " `corner_kicks_for_away` = '"+str(corner_kicks_for_away)+"', "  
+        
+        # update += " `corner_kicks_againts_home` = '"+str(corner_kicks_againts_home)+"', "  
+        # update += " `corner_kicks_againts_away` = '"+str(corner_kicks_againts_away)+"', "  
+
+
+        # if(match_played_api != 0):
+        #     corner_kicks_for_ratio = corner_kicks_for / match_played_api
+        #     update += " `corner_kicks_for_ratio` = '"+str(corner_kicks_for_ratio)+"', " 
+
+        # corner_kicks_for_home_ratio = 0
+        # if(match_played_api_home != 0):
+        #     corner_kicks_for_home_ratio = corner_kicks_for_home / match_played_api_home
+        #     update += " `corner_kicks_for_home_ratio` = '"+str(corner_kicks_for_home_ratio)+"', "
+ 
+        # corner_kicks_for_away_ratio = 0
+        # if(match_played_api_away != 0):
+        #     corner_kicks_for_away_ratio = corner_kicks_for_away / match_played_api_away
+        #     update += " `corner_kicks_for_away_ratio` = '"+str(corner_kicks_for_away_ratio)+"', "
+        # # ------------------------------------------------------
+        # if(match_played_api != 0):
+        #     corner_kicks_againts_ratio = corner_kicks_againts / match_played_api
+        #     update += " `corner_kicks_againts_ratio` = '"+str(corner_kicks_againts_ratio)+"', " 
+
+        # corner_kicks_againts_home_ratio = 0
+        # if(match_played_api_home != 0):
+        #     corner_kicks_againts_home_ratio = corner_kicks_againts_home / match_played_api_home
+        #     update += " `corner_kicks_againts_home_ratio` = '"+str(corner_kicks_againts_home_ratio)+"', "
+ 
+        # corner_kicks_againts_away_ratio = 0
+        # if(match_played_api_away != 0):
+        #     corner_kicks_againts_away_ratio = corner_kicks_againts_away / match_played_api_away
+        #     update += " `corner_kicks_againts_away_ratio` = '"+str(corner_kicks_againts_away_ratio)+"', "
+        
+        # if(match_played_api != 0):
+        #     corner_kicks_avg_per_match = corner_kicks_total / match_played_api
+        #     update += " `corner_kicks_avg_per_match` = '"+str(corner_kicks_avg_per_match)+"', "  
+        # ------------------------------------------------------
+        update += " `offsides_for` = '"+str(offsides_for)+"', "  
+        update += " `offsides_for_ratio` = '"+str(offsides_for_ratio)+"', "  
+        update += " `offsides_for_home` = '"+str(offsides_for_home)+"', "  
+        update += " `offsides_for_home_ratio` = '"+str(offsides_for_home_ratio)+"', "  
+        update += " `offsides_for_away` = '"+str(offsides_for_away)+"', "  
+        update += " `offsides_for_away_ratio` = '"+str(offsides_for_away_ratio)+"', "  
+        # ------------------------------------------------------
+        update += " `offsides_againts` = '"+str(offsides_againts)+"', "  
+        update += " `offsides_againts_ratio` = '"+str(offsides_againts_ratio)+"', "  
+        update += " `offsides_againts_home` = '"+str(offsides_againts_home)+"', "  
+        update += " `offsides_againts_home_ratio` = '"+str(offsides_againts_home_ratio)+"', "  
+        update += " `offsides_againts_away` = '"+str(offsides_againts_away)+"', "  
+        update += " `offsides_againts_away_ratio` = '"+str(offsides_againts_away_ratio)+"', "  
+        # ------------------------------------------------------------------------------------------- yellow_cards 
+        update += " `yellow_cards_for` = '"+str(yellow_cards_for)+"', "
+        if(match_played_api != 0):
+            update += " `yellow_cards_for_ratio` = '"+str(yellow_cards_for / match_played_api)+"', "
+        # ------------------------------------------------------
+        update += " `yellow_cards_for_home` = '"+str(yellow_cards_for_home)+"', "
+        yellow_cards_for_home_ratio = 0
+        if(match_played_api_home != 0):
+            yellow_cards_for_home_ratio = yellow_cards_for_home / match_played_api_home
+            update += " `yellow_cards_for_home_ratio` = '"+str(yellow_cards_for_home_ratio)+"', " 
+        # ------------------------------------------------------
+        update += " `yellow_cards_againts_away` = '"+str(yellow_cards_againts_away)+"', "
+        yellow_cards_againts_away_ratio = 0
+        if(match_played_api_home != 0):
+            yellow_cards_againts_away_ratio = yellow_cards_againts_away / match_played_api_home
+            update += " `yellow_cards_againts_away_ratio` = '"+str(yellow_cards_againts_away_ratio)+"', " 
+        # ------------------------------------------------------
+        #  
+        #  
+        # ------------------------------------------------------
+        update += " `yellow_cards_againts` = '"+str(yellow_cards_againts)+"', "
+        if(match_played_api != 0):
+            update += " `yellow_cards_againts_ratio` = '"+str(yellow_cards_againts / match_played_api)+"', " 
+        # ------------------------------------------------------
+        update += " `yellow_cards_for_away` = '"+str(yellow_cards_for_away)+"', "
+        yellow_cards_for_away_ratio = 0
+        if(match_played_api_away != 0):
+            yellow_cards_for_away_ratio = yellow_cards_for_away / match_played_api_away
+            update += " `yellow_cards_for_away_ratio` = '"+str(yellow_cards_for_away_ratio)+"', " 
+        # ------------------------------------------------------
+        update += " `yellow_cards_againts_home` = '"+str(yellow_cards_againts_home)+"', "
+        yellow_cards_againts_home_ratio = 0
+        if(match_played_api_away != 0):
+            yellow_cards_againts_home_ratio = yellow_cards_againts_home / match_played_api_away
+            update += " `yellow_cards_againts_home_ratio` = '"+str(yellow_cards_againts_home_ratio)+"', "
+        # ------------------------------------------------------  
+        # ------------------------------------------------------------------------------------------- red_cards 
+        update += " `red_cards_for` = '"+str(red_cards_for)+"', "
+        if(match_played_api != 0):
+            update += " `red_cards_for_ratio` = '"+str(red_cards_for / match_played_api)+"', "
+        # ------------------------------------------------------
+        update += " `red_cards_for_home` = '"+str(red_cards_for_home)+"', "
+        red_cards_for_home_ratio = 0
+        if(match_played_api_home != 0):
+            red_cards_for_home_ratio = red_cards_for_home / match_played_api_home
+            update += " `red_cards_for_home_ratio` = '"+str(red_cards_for_home_ratio)+"', " 
+        # ------------------------------------------------------
+        update += " `red_cards_againts_away` = '"+str(red_cards_againts_away)+"', "
+        red_cards_againts_away_ratio = 0
+        if(match_played_api_home != 0):
+            red_cards_againts_away_ratio = red_cards_againts_away / match_played_api_home
+            update += " `red_cards_againts_away_ratio` = '"+str(red_cards_againts_away_ratio)+"', " 
+        # ------------------------------------------------------
+        #  
+        #  
+        # ------------------------------------------------------
+        update += " `red_cards_againts` = '"+str(red_cards_againts)+"', "
+        if(match_played_api != 0):
+            update += " `red_cards_againts_ratio` = '"+str(red_cards_againts / match_played_api)+"', " 
+        # ------------------------------------------------------
+        update += " `red_cards_for_away` = '"+str(red_cards_for_away)+"', "
+        red_cards_for_away_ratio = 0
+        if(match_played_api_away != 0):
+            red_cards_for_away_ratio = red_cards_for_away / match_played_api_away
+            update += " `red_cards_for_away_ratio` = '"+str(red_cards_for_away_ratio)+"', " 
+        # ------------------------------------------------------
+        update += " `red_cards_againts_home` = '"+str(red_cards_againts_home)+"', "
+        red_cards_againts_home_ratio = 0
+        if(match_played_api_away != 0):
+            red_cards_againts_home_ratio = red_cards_againts_home / match_played_api_away
+            update += " `red_cards_againts_home_ratio` = '"+str(red_cards_againts_home_ratio)+"', "
+        # ------------------------------------------------------  
+        # ------------------------------------------------------
+        # ------------------------------------------------------
+        # ------------------------------------------------------
+        # ------------------------------------------------------
+        # ------------------------------------------------------
         update += " `updated_data_at` = now() "  
         # ------------------------------------------------------
         update += " where leagueapi_id = '"+str(leagueapi_id)+"' "  
@@ -1019,7 +1567,9 @@ def st_check_standings(leagueapi_id, season, space):
     query = " Select * "  
     query += " from standings "  
     query += " where leagueapi_id = '"+str(leagueapi_id)+"' "  
-    query += " and season = '"+str(season)+"' "   
+    query += " and season = '"+str(season)+"' "  
+    # ------------------------------------------------------  
+    print(space + query)  
     # ----------------------------------------------------------  
     mycursor = mydb.cursor()
     mycursor.execute(query)
@@ -1041,27 +1591,29 @@ def st_check_standings(leagueapi_id, season, space):
         query = " (Select teams_home_id as teams_id,  "  
         query += " teams_home as name "  
         query += " from football_fixtures "  
-        query += " where leagueapi_id = '"+str(leagueapi_id)+"' "  
-        query += " and season = '"+str(season)+"'  "  
+        query += " where leagueapi_id = "+str(leagueapi_id)+" "  
+        query += " and season = "+str(season)+" "  
         query += " group by teams_home_id ) "  
         query += " union all  "  
         query += " ( Select teams_away_id as teams_id, "  
         query += " teams_away as name "  
         query += " from football_fixtures "  
-        query += " where leagueapi_id = '"+str(leagueapi_id)+"' "  
-        query += " and season = '"+str(season)+"' " 
+        query += " where leagueapi_id = "+str(leagueapi_id)+" "  
+        query += " and season = "+str(season)+" " 
         query += " group by teams_away_id )  "     
+        # ------------------------------------------------------  
+        print(space + query)
         # ------------------------------------------------------  
         mycursor = mydb.cursor()
         mycursor.execute(query)
         myresult = mycursor.fetchall()
         # ------------------------------------------------------  
-        total_rows = len(result)
+        total_rows = len(myresult)
         print(space + "Total Row(s) : " + str(total_rows), flush=True) 
         # ------------------------------------------------------  
         counter = 0
         # ------------------------------------------------------   
-        for x in result:    
+        for x in myresult:    
             # --------------------------------------------------  
             counter        += 1
             # --------------------------------------------------  

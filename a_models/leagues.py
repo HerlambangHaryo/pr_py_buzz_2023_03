@@ -160,3 +160,32 @@ def lg_update_reset_pattern(leagueapi_id, def_col, today, space):
     # ---------------------------------------------------------- 
     print(space + "> leagues reset " + def_col + " UPDATED at " + str(today), flush=True)
     # ---------------------------------------------------------- 
+
+       
+def lg_update_tanggal(leagueapi_id, def_col, today, space):
+    # ----------------------------------------------------------   
+    space += "__"
+    # ----------------------------------------------------------  
+    print(space + "lg_update_tanggal()", flush=True) 
+    # ----------------------------------------------------------   
+    space += "__"
+    # ----------------------------------------------------------  
+    host="localhost"
+    user="root" 
+    database="pr_mmbuzz_2022_06"
+    mydb = mysql.connector.connect(host=host,user=user,password="",database=database)
+    mycursor = mydb.cursor()
+    # ---------------------------------------------------------- 
+    query_commit = "update leagues set "   
+    # ----------------------------------------------------------  
+    query_commit += " "+str(def_col)+" = '"+str(today)+"' "   
+    # ---------------------------------------------------------- 
+    query_commit += " where leagueapi_id = '"+str(leagueapi_id)+"' " 
+    # ---------------------------------------------------------- 
+    print(space + query_commit, flush=True) 
+    # ---------------------------------------------------------- 
+    mycursor.execute(query_commit)
+    mydb.commit()  
+    # ---------------------------------------------------------- 
+    print(space + "> leagues : " + def_col + " UPDATED at " + str(today), flush=True)
+    # ---------------------------------------------------------- 
