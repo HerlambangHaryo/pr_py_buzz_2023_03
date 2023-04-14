@@ -1701,9 +1701,12 @@ def xp_set_pattern(fixtureapi_id, prep_col, advice_status, space):
         print(space + "> football_fixtures update pattern commited", flush=True)
         # -------------------------------------------------
         if(prep_col == "pre_" and advice_status == 'yes'):
-            pl_predates_get_advice(fixtureapi_id, 'no', space)
-            pl_predates_get_advice(fixtureapi_id, 'yes', space)
+            pl_predates_get_advice(fixtureapi_id, 'no', 'pre', space)
+            pl_predates_get_advice(fixtureapi_id, 'yes', 'pre', space)
             aa = ''
+        elif(prep_col == "end_" and advice_status == 'yes'):
+            pl_predates_get_advice(fixtureapi_id, 'no', 'end', space)
+            pl_predates_get_advice(fixtureapi_id, 'yes', 'end', space)
         else:
             print(space + "> no PL predates get advices", flush=True)
         # ------------------------------------------------- 

@@ -1,7 +1,54 @@
 # Import
 import mysql.connector  
 from a_models.xpattern  import *   
+from a_models.api_odds import *  
  
+def lg_get_league_for_predates(leagueapi_id, season, page, date, date_raw, space):
+    # ----------------------------------------------------------   
+    space += "__"
+    # ----------------------------------------------------------  
+    print(space + "lg_get_league_for_predates()", flush=True) 
+    # ----------------------------------------------------------   
+    space += "__"
+    # ----------------------------------------------------------  
+    host="localhost"
+    user="root" 
+    database="pr_mmbuzz_2022_06"
+    mydb = mysql.connector.connect(host=host,user=user,password="",database=database)
+    mycursor = mydb.cursor()
+    # ----------------------------------------------------------   
+    query = " Select *  "
+    query += " from leagues "  
+    query += " where leagueapi_id = '"+str(leagueapi_id)+"' " 
+    # ----------------------------------------------------------    
+    mycursor = mydb.cursor()
+    mycursor.execute(query)
+    myresult = mycursor.fetchall()
+    # ----------------------------------------------------------
+    for x in myresult:   
+        bookmakersapi_id = x[6]
+        bookmakersname   = x[7]
+    # ----------------------------------------------------------
+    print(space + "bookmakersapi_id : " + str(bookmakersapi_id) , flush=True)
+    print(space + "bookmakersname : " + str(bookmakersname) , flush=True)
+    # ----------------------------------------------------------- 
+    if(bookmakersapi_id == 8 or bookmakersapi_id == 11): 
+        # -------------------------------------------------------         
+        DICT = {
+            'date' : date,
+            'page' : page,
+            'league' : leagueapi_id,
+            'season' : season,
+            'bookmaker' : bookmakersapi_id,
+            'date_raw' : date_raw,
+        }
+        # ------------------------------------------------------- 
+        PREP_ = "preleague_"
+        # -------------------------------------------------------
+        ao_controll_match_update(DICT, PREP_, space)
+        # -------------------------------------------------------
+    # ----------------------------------------------------------
+
 def lg_get_leagueapi_id_ARRAY(DICT, space):
     # ----------------------------------------------------------   
     space += "__"

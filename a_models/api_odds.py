@@ -104,10 +104,24 @@ def ao_response_odds(APIkey, DICT, PREP_, space):
         print(space + "league : " + str(DICTleague), flush=True)
         print(space + "page : " + str(DICTpage), flush=True)
 
-        querystring = {"date":DICTdate, "bookmaker":DICTbookmaker, "season":DICTseason, "league":DICTleague, "page":DICTpage}
+        # querystring = {"date":DICTdate, "bookmaker":DICTbookmaker, "season":DICTseason, "league":DICTleague, "page":DICTpage}
+        querystring = {"bookmaker":DICTbookmaker, "season":DICTseason, "league":DICTleague, "page":DICTpage}
 
         PREP_ = "pre_"
         XPREP_ = "preleague_"
+        # ----------------------------------------------------------
+    elif(PREP_ == "one_"):
+        # ------------------------------------------------------ 
+        DICTfixture = DICT['fixture'] 
+        DICTbookmaker = DICT['bookmaker'] 
+
+        print(space + "fixture : " + str(DICTfixture), flush=True) 
+        print(space + "bookmaker : " + str(DICTbookmaker), flush=True) 
+
+        querystring = {"fixture":DICTfixture, "bookmaker":DICTbookmaker }
+
+        PREP_ = "end_"
+        XPREP_ = "one_"
     # ---------------------------------------------------------- 
     # ----------------------------------------------------------  
     headers = {
@@ -126,8 +140,28 @@ def ao_response_odds(APIkey, DICT, PREP_, space):
     counter_response = 0
     # ----------------------------------------------------------   
     space += "__"
-    # ---------------------------------------------------------- 
-    if(total_response > 0):
+    # ----------------------------------------------------------  
+    if(total_response == 0):
+        if(XPREP_ == "end_"): 
+            # ------------------------------------------------------    
+            print(space + "> FUCKIN ZERO !", flush=True)
+            # ------------------------------------------------------ 
+            host="localhost"
+            user="root" 
+            database="pr_mmbuzz_2022_06"
+            mydb = mysql.connector.connect(host=host,user=user,password="",database=database)
+            mycursor = mydb.cursor()
+            # ------------------------------------------------------ 
+            unfinished = " UPDATE `football_fixtures` SET "   
+            unfinished += " end_odd_updated_at  = current_timestamp " 
+            unfinished += " WHERE DATE(date) = '"+str(DICTdate)+"' " 
+            unfinished += " AND leagueapi_id = '"+str(DICTleague)+"' " 
+            unfinished += " AND season = '"+str(DICTseason)+"' " 
+            # ------------------------------------------------------  
+            mycursor.execute(unfinished)
+            mydb.commit()      
+            # ------------------------------------------------------  
+    elif(total_response > 0):
         for i in d['response']: 
             # ------------------------------------------------------
             print("")
@@ -292,6 +326,7 @@ def ao_response_odds(APIkey, DICT, PREP_, space):
                     good_to_go = 0
 
             print(space + "good to Go " + str(good_to_go))
+
             if(good_to_go == 1):
                 # ------------------------------------------------------ 
                 # ------------------------------------------------------ 
@@ -307,6 +342,8 @@ def ao_response_odds(APIkey, DICT, PREP_, space):
                 exact_gs_val = ""
                 # ------------------------------------------------------ 
                 space += "__"
+                # ------------------------------------------------------ 
+                special_odds = ""
                 # ------------------------------------------------------ 
                 for ba in bookmakers_Array:
                     # -------------------------------------------------- 
@@ -342,7 +379,7 @@ def ao_response_odds(APIkey, DICT, PREP_, space):
                             bets_id   = bta['id'] 
                             # ------------------------------------------
                             word_002 = str(bets_id) + " " + str(bets_name)
-                            print(space + "____" + word_002)
+                            # print(space + "____" + word_002)
                             # ------------------------------------------
                             betsvalues_array = bta['values']
                             # ------------------------------------------
@@ -356,7 +393,37 @@ def ao_response_odds(APIkey, DICT, PREP_, space):
                                 bet_id_list = [1, 2, 3, 4, 5, 6, 7, 8, 11, 12, 13, 19, 20, 
                                             21, 24, 25, 26, 27, 28, 32, 34, 35, 36, 38, 
                                             39, 40, 41, 42, 46, 48, 49, 52, 55, 73, 74, 79, 86]
-                                # --------------------------------------
+                                # --------------------------------------  
+
+                                if(str(bets_odd) == "1.83"):
+                                    pre_special_odds = "<tr>"
+                                    pre_special_odds += "<td>" 
+                                    pre_special_odds += str(bets_name) +  " " 
+                                    pre_special_odds += str(bets_value)
+                                    pre_special_odds += "</td>"
+                                    pre_special_odds += "<td>"
+                                    pre_special_odds += str(bets_odd)
+                                    pre_special_odds += "</td>"
+                                    pre_special_odds += "</tr>"
+                                    
+                                    special_odds += pre_special_odds
+                                    print(space +  pre_special_odds, flush=True)
+                                elif(str(bets_odd) == "1.98"):
+                                    pre_special_odds = "<tr>"
+                                    pre_special_odds += "<td>" 
+                                    pre_special_odds += str(bets_name) +  " " 
+                                    pre_special_odds += str(bets_value)
+                                    pre_special_odds += "</td>"
+                                    pre_special_odds += "<td>"
+                                    pre_special_odds += str(bets_odd)
+                                    pre_special_odds += "</td>"
+                                    pre_special_odds += "</tr>"
+                                    
+                                    special_odds += pre_special_odds
+                                    print(space +  pre_special_odds, flush=True)
+
+
+
                                 if bets_id in bet_id_list: 
                                     # ----------------------------------
                                     word_bets = "res id = " + str(bookmakersapi_name) + "/"  
@@ -381,7 +448,7 @@ def ao_response_odds(APIkey, DICT, PREP_, space):
                                         pre_set = PREP_ + colmnx + " = '" + bets_odd + "', " 
                                         SET_odds += pre_set 
                                         word_003 = pre_set 
-                                        print(space + "______" + word_003)
+                                        # print(space + "______" + word_003)
                                     # ----------------------------------
                                 # --------------------------------------
                                 elif(bets_id == 92):
@@ -424,7 +491,7 @@ def ao_response_odds(APIkey, DICT, PREP_, space):
                                     word_else = space + "bet_id: " + str(bets_id)
                                     word_else += " --- bets_value: " + str(bets_value)
                                     word_else += " --- bets_odd: " + str(bets_odd)
-                                    print(space +  word_else, flush=True)
+                                    # print(space +  word_else, flush=True)
                 # ------------------------------------------------------ 
                 # ------------------------------------------------------
                 # print(space + word_else)
@@ -458,18 +525,31 @@ def ao_response_odds(APIkey, DICT, PREP_, space):
                 # print(space + "last_goal_scorer2:" + str(last2_gs_val), flush=True )
                 # print(space + "exact_score:" + str(exact_gs_val), flush=True )
                 # -------------------------------------------------- 
+                if(special_odds == ''):
+                    special_odds_query = " "+PREP_+"special_odds = Null, "
+                elif(special_odds != ''):
+                    special_odds_query = " "+PREP_+"special_odds = '"+str(special_odds)+"', "
+
+                    
+                    pre_on_eye = '<i class="fa-solid fa-eye text-primary"></i>'
+                    special_odds_query += " on_eye= '"+str(pre_on_eye)+"', "
+
+                    print(space + special_odds_query, flush=True ) 
+                # -------------------------------------------------- 
                 # -------------------------------------------------- 
                 # -------------------------------------------------- 
                 if(PREP_ == "pre_"): 
-                    fixture_status_update = " , pre_odd_updated_at = current_timestamp " 
-                if(PREP_ == "end_"):
+                    fixture_status_update = " , pre_odd_updated_at = current_timestamp "  
+                elif(PREP_ == "end_" and XPREP_ == "one_"):
+                    fixture_status_update = " " 
+                elif(PREP_ == "end_"):
                     fixture_status_update = " , end_odd_updated_at = current_timestamp , fixture_status = 'Match Finished Ended' " 
                 # -------------------------------------------------- 
-                print(space + "fixture_status_update:" + str(fixture_status_update), flush=True ) 
+                # print(space + "fixture_status_update:" + str(fixture_status_update), flush=True ) 
                 # -------------------------------------------------- 
                 WHERE_odds = " WHERE fixtureapi_id = '"+fixtureapi_id+"' " 
                 # -------------------------------------------------- 
-                final_SET_odds = SET_odds +  date_update + ags_update + fixture_status_update 
+                final_SET_odds = SET_odds +  date_update +  special_odds_query + ags_update + fixture_status_update 
                 query_update = update_odds + final_SET_odds + WHERE_odds  
                 info_query = update_odds + date_update + fixture_status_update  
                 word_001 = space + info_query 
@@ -479,6 +559,7 @@ def ao_response_odds(APIkey, DICT, PREP_, space):
                 mycursor.execute(query_update)
                 mydb.commit()      
 
+        
         if(total_response == 10):
             # ----------------------------------------------------------   
             print(space + "__re_looping__", flush=True)
@@ -515,6 +596,7 @@ def ao_response_odds(APIkey, DICT, PREP_, space):
                     "league" : DICTleague,
                     'page' : DICTpage,
                 }
+
             print(space + "==========================================================================") 
             ao_controll_match_update(DICT, XPREP_, '  ________')
             # ----------------------------------------------------------   
@@ -525,25 +607,27 @@ def ao_response_odds(APIkey, DICT, PREP_, space):
             space += "  "
             # # ----------------------------------------------------------    
             print(space + "> No longer get supported", flush=True)
-            # host="localhost"
-            # user="root" 
-            # database="pr_mmbuzz_2022_06"
-            # mydb = mysql.connector.connect(host=host,user=user,password="",database=database)
-            # mycursor = mydb.cursor()
-            # # ----------------------------------------------------------   
-            # unfinished = " UPDATE `football_fixtures` SET "   
-            # unfinished += " fixture_status = 'Match Finished Ended' " 
-            # unfinished += " WHERE DATE(date) = '"+str(date)+"' " 
-            # unfinished += " AND leagueapi_id = '"+str(leagueapi_id)+"' " 
-            # unfinished += " AND season = '"+str(season)+"' " 
-            # # ----------------------------------------------------------
-            # mycursor.execute(unfinished)
-            # mydb.commit()      
-            # # ----------------------------------------------------------
-            # print(space + str(leagueapi_id) + " " + str(date) + " Match Finished Ended")
-            # # ----------------------------------------------------------     
-            # print("")  
-    
+
+            
+            if(XPREP_ == "end_"): 
+                # ------------------------------------------------------    
+                print(space + "> FUCKIN END !", flush=True)
+                # ------------------------------------------------------ 
+                host="localhost"
+                user="root" 
+                database="pr_mmbuzz_2022_06"
+                mydb = mysql.connector.connect(host=host,user=user,password="",database=database)
+                mycursor = mydb.cursor()
+                # ------------------------------------------------------ 
+                unfinished = " UPDATE `football_fixtures` SET "   
+                unfinished += " end_odd_updated_at  = current_timestamp " 
+                unfinished += " WHERE DATE(date) = '"+str(DICTdate)+"' " 
+                unfinished += " AND leagueapi_id = '"+str(DICTleague)+"' " 
+                unfinished += " AND season = '"+str(DICTseason)+"' " 
+                # ------------------------------------------------------  
+                mycursor.execute(unfinished)
+                mydb.commit()      
+                # ------------------------------------------------------  
     
     
     

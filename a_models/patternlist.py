@@ -193,7 +193,7 @@ def pl_country_for_patternlists(yesterday_ago, space):
         # ------------------------------------------------------- 
     # -----------------------------------------------------------   
 
-def pl_predates_get_advice(fixtureapi_id, mirror, space):
+def pl_predates_get_advice(fixtureapi_id, mirror, status, space):
     # ----------------------------------------------------------  
     print(space + "__pl_predates_get_advice__" + mirror)
     # ---------------------------------------------------------- 
@@ -225,8 +225,7 @@ def pl_predates_get_advice(fixtureapi_id, mirror, space):
         idx                 = x[3] 
         # ------------------------------------------------------
         end_ah_pattern  = pre_ah_pattern
-        end_gou_pattern = pre_gou_pattern
-        status = "pre"
+        end_gou_pattern = pre_gou_pattern 
         # ------------------------------------------------------
     # ----------------------------------------------------------  
     pl_get_leagueapi_for_advice(pre_ah_pattern, pre_gou_pattern, end_ah_pattern, end_gou_pattern, leagueapi_id, idx, status, mirror, space)
@@ -2349,7 +2348,7 @@ def pl_get_leagueapi_for_advice(pre_ah_pattern, pre_gou_pattern, end_ah_pattern,
 
  
     update += "WHERE `id` = "+str(idx)+" "
-    # print(space + "   " + update)
+    print(space + "   " + update)
     mycursor.execute(update)
     mydb.commit()  
     print(space + "   " + "--UPDATED--")
