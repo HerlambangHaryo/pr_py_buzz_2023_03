@@ -420,7 +420,7 @@ def pd_get_fixtures_next_match(day0, day1, ROUTES, space):
     query += " , "+PREP_COL+"goals_overunder__second_half_over_375"
     query += " , "+PREP_COL+"goals_overunder__second_half_under_375" 
 
-    query += " from football_fixtures " 
+    query += " from football_fixturesx " 
     if(ROUTES == 'one'):
         query += " where one = 1 " 
     elif(ROUTES == 'fixture'):
@@ -5522,7 +5522,7 @@ def pd_get_fixtures_next_match(day0, day1, ROUTES, space):
             # ---------------------------------------------- 
             star = '<i class="fas fa-star text-yellow"></i>'
             # ---------------------------------------------- 
-            query_commit = "update football_fixtures set "   
+            query_commit = "update football_fixturesx set "   
             # ----------------------------------------------  
             # ---------------------------------------------- 
             if(ROUTES == 'one'):

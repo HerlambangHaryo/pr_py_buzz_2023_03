@@ -24,7 +24,7 @@ def xp_get_league_fixture_to_reset(leagueapi_id, date, prep_col, space):
     query += " season, "   
     query += " fixtureapi_id "  
     
-    query += " from football_fixtures " 
+    query += " from football_odds " 
     query += " where leagueapi_id = '"+str(leagueapi_id)+"' "  
     query += " and date <= '"+str(date)+"' "  
     query += " and fixture_status  in ('Match Finished', 'Match Finished Ended') " 
@@ -416,7 +416,7 @@ def xp_set_pattern(fixtureapi_id, prep_col, advice_status, space):
     
     
     query_1 += ", leagueapi_id"
-    query_1 += " from football_fixtures "  
+    query_1 += " from football_odds "  
     query_1 += " where fixtureapi_id = '"+str(fixtureapi_id)+"' "  
     # ----------------------------------------------------------    
     mycursor = mydb.cursor()
@@ -424,13 +424,12 @@ def xp_set_pattern(fixtureapi_id, prep_col, advice_status, space):
     result = mycursor.fetchall()
     # ----------------------------------------------------------    
     for rs1 in result: 
-        counter_col = 0
         # -------------------------------------
+        counter_col = 0
         fixtureapi_id       = rs1[counter_col]
 
         counter_col += 1
-        rs1_date                = rs1[counter_col]
-
+        rs1_date                = rs1[counter_col] 
         # -------------------------------------
 
         counter_col += 1
@@ -1685,20 +1684,24 @@ def xp_set_pattern(fixtureapi_id, prep_col, advice_status, space):
             if(gou_total_95 < 4):
                 gou_pattern += "95g"  
         # -------------------------------------------------
-        update_3 = "update football_fixtures set  "  
+        update_3 = "update football_odds set  "  
+        update_3 += " " + prep_col + "response = '2',  "  
+
         update_3 += " " + prep_col + "ah_pattern = '" + ah_pattern + "H',  "  
         update_3 += " " + prep_col + "ah_pattern_mirror = '" + ah_pattern_mirror + "H',  "  
         update_3 += " " + prep_col + "gou_pattern = '" + gou_pattern + "G'  "  
         update_3 += " where fixtureapi_id = '" + str(fixtureapi_id) + "' " 
+        # ------------------------------------------------- 
         # -------------------------------------------------
         mycursor.execute(update_3)
         mydb.commit()   
         # ------------------------------------------------- 
-        print(space + "> fixtureapi_id = " + str(fixtureapi_id), flush=True)
+        print(space + "> fixtureapi_id = " + str(fixtureapi_id), flush=True) 
+        
         print(space + "> " + prep_col + "ah_pattern = " + ah_pattern + "H", flush=True)
         print(space + "> " +prep_col + "ah_pattern_mirror = " + ah_pattern_mirror + "H", flush=True)
         print(space + "> " +prep_col + "gou_pattern = " + gou_pattern + "G", flush=True)
-        print(space + "> football_fixtures update pattern commited", flush=True)
+        print(space + "> football_odds update pattern commited", flush=True)
         # -------------------------------------------------
         if(prep_col == "pre_" and advice_status == 'yes'):
             pl_predates_get_advice(fixtureapi_id, 'no', 'pre', space)

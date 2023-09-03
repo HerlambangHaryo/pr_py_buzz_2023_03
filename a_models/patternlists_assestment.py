@@ -1,6 +1,6 @@
 # Import
 import mysql.connector
-
+ 
 def pa_assestment_daily_update(leagueapi_id, league_country, 
             pre_ah_pattern, pre_ah_pattern_mirror, pre_gou_pattern, 
             end_ah_pattern, end_ah_pattern_mirror, end_gou_pattern, 
@@ -22,7 +22,7 @@ def pa_assestment_daily_update(leagueapi_id, league_country,
     query += " score_halftime_home, " 
     query += " score_halftime_away  "
 
-    query += " from football_fixtures "    
+    query += " from football_fixturesx "    
 
     query += " where leagueapi_id = '"+str(leagueapi_id)+"' "  
     query += " and league_country = '"+str(league_country)+"' "
@@ -385,6 +385,10 @@ def pa_final_assestment(myresult, leagueapi_id, league_country,
     halftime_result_both_teams_score_home_no = 0
     halftime_result_both_teams_score_draw_no = 0
     halftime_result_both_teams_score_away_no = 0 
+
+    ## -----------------------------------////////////// betid = 48 
+    to_score_in_both_halves_by_teams_home = 0
+    to_score_in_both_halves_by_teams_away = 0
     # -------------------------------------------------- 
     pattern_total_ff = len(myresult)
     # ----------------------------------------------------------  
@@ -925,6 +929,15 @@ def pa_final_assestment(myresult, leagueapi_id, league_country,
                 second_half_winner_draw += 1
             elif(score_secondtime_home < score_secondtime_away):
                 second_half_winner_away += 1 
+
+                
+            # 48 	To Score In Both Halves By Teams 
+            if(score_halftime_home > 0 and score_secondtime_home > 0):
+                to_score_in_both_halves_by_teams_home += 1  
+            if(score_halftime_away > 0 and score_secondtime_away > 0):
+                to_score_in_both_halves_by_teams_away += 1
+
+
         # ----------------------------------------------
     # --------------------------------------------------
     # --------------------------------------------------
@@ -959,7 +972,8 @@ def pa_final_assestment(myresult, leagueapi_id, league_country,
     # 41 	Away Team Exact Goals Number
     # 42 	Second Half Exact Goals Number
     # 46 	Exact Goals Number - First Half
-    # 48 	To Score In Both Halves By Teams
+    # 48 	To Score In Both Halves By Teams 
+
     # 49 	Total Goals/Both Teams To Score
     # 52 	Halftime Result/Both Teams Score
     # 55 	Corners 1x2
@@ -1544,7 +1558,7 @@ def pa_assestment(leagueapi_id, yesterday_ago, space):
     query += ' , teams_home '   
     query += ' , teams_away ' 
     query += ' , league_country ' 
-    query += 'FROM football_fixtures'  
+    query += 'FROM football_fixturesx'  
     query += " WHERE fixture_status in ('Match Finished', 'Match Finished Ended') "     
     query += " and leagueapi_id = '"+str(leagueapi_id)+"' "    
     # ----------------------------------------------------------   
@@ -1636,7 +1650,7 @@ def pa_assestment(leagueapi_id, yesterday_ago, space):
         query_1 += " score_halftime_home, " 
         query_1 += " score_halftime_away  "
         
-        query_1 += " from `football_fixtures` " 
+        query_1 += " from `football_fixturesx` " 
         query_1 += " where `pre_ah_pattern` = '"+str(pre_ah_pattern)+"' "
         query_1 += " and `pre_gou_pattern` = '"+str(pre_gou_pattern)+"' "
 
@@ -1648,7 +1662,7 @@ def pa_assestment(leagueapi_id, yesterday_ago, space):
 
         query_1 += " and `leagueapi_id` = "+str(leagueapi_id)+" "
         query_1 += " and `fixture_status` in ('Match Finished Ended', 'Match Finished') "
-        query_1 += " and `football_fixtures`.`deleted_at` is null order by `date` asc) " 
+        query_1 += " and `football_fixturesx`.`deleted_at` is null order by `date` asc) " 
         # ------------------------------------------------------
         mycursor = mydb.cursor() 
         mycursor.execute(query_1) 

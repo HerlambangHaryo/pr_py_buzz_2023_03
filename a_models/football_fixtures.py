@@ -5,8 +5,260 @@ from a_models.api_odds import *
 from a_models.xpattern import *   
 from a_models.standings import *   
 from a_models.leagues import *   
+from a_models.patternlist_new import *  
 from a_models.patternlists_assestment import *  
+from a_models.patternlists_assestment_new import *  
+from a_models.assessment_pattern import *  
 
+def ff_get_fixtures_group_by_pre_end_patternlists(leagueapi_id, space):
+    # ----------------------------------------------------------   
+    space += "__"
+    # ---------------------------------------------------------- 
+    print(space + "ff_get_fixtures_group_by_pre_end_patternlists()", flush=True)
+    # ----------------------------------------------------------    
+    space += "__"
+    # ----------------------------------------------------------  
+    host="localhost"
+    user="root" 
+    database="pr_mmbuzz_2022_06"
+    mydb = mysql.connector.connect(host=host,user=user,password="",database=database)
+    mycursor = mydb.cursor()
+    # ----------------------------------------------------------  
+    query = "Select "
+    query += " pre_ah_pattern " 
+    query += " , pre_gou_pattern "  
+
+    query += " , end_ah_pattern " 
+    query += " , end_gou_pattern "  
+
+    query += " , count(*) "  
+
+    query += " from football_odds " 
+    query += " where leagueapi_id = '"+str(leagueapi_id)+"' " 
+    query += " and fixture_status in ('Match Finished', 'Match Finished Ended') " 
+
+    query += " and pre_ah_pattern is not null " 
+    query += " and pre_gou_pattern is not null " 
+    
+    query += " and end_ah_pattern is not null " 
+    query += " and end_gou_pattern is not null " 
+
+    query += " and pre_ah_pattern != 'H' " 
+    query += " and pre_gou_pattern != 'G' " 
+
+    query += " and end_ah_pattern != 'H' " 
+    query += " and end_gou_pattern != 'G' " 
+    
+    query += " and pre_response = 3 " 
+    query += " and end_response = 3 " 
+    query += " and pattern_from is null " 
+
+    query += " group by "
+    query += " pre_ah_pattern " 
+    query += " , pre_gou_pattern "  
+    query += " , end_ah_pattern " 
+    query += " , end_gou_pattern "  
+
+    query += " order by count(*) desc " 
+    # ----------------------------------------------------------   
+    print(space + query)
+    # ----------------------------------------------------------   
+    mycursor = mydb.cursor()
+    mycursor.execute(query)
+    result =  mycursor.fetchall()
+    # ----------------------------------------------------------   
+    space += "__"
+    # ----------------------------------------------------------
+    total_rows = len(result)    
+    # ----------------------------------------------------------
+    print(space + "Total Row(s) : " + str(total_rows), flush=True) 
+    # close the cursor and database connection
+    mycursor.close()
+    mydb.close()
+    # ----------------------------------------------------------  
+    lg_update_total_pattern(leagueapi_id, "total_pattern_pre_ends", total_rows, space)
+    # ----------------------------------------------------------  
+    counter = 0
+    # ----------------------------------------------------------   
+    space += "__"
+    # ----------------------------------------------------------   
+    for x in result:    
+        # ------------------------------------------------------
+        counter             += 1
+        # ------------------------------------------------------
+        pre_ah_pattern      = str(x[0]) 
+        pre_gou_pattern     = str(x[1])  
+
+        end_ah_pattern      = str(x[2]) 
+        end_gou_pattern     = str(x[3])  
+
+        countrows           = str(x[4])  
+        # ------------------------------------------------------ 
+        word = space + "[" + str(counter) + "/" + str(total_rows) + "] " + countrows + ". "
+        word += pre_ah_pattern  
+        word += " // " + pre_gou_pattern   
+        word += " >> " + end_ah_pattern  
+        word += " // " + end_gou_pattern   
+        print(word, flush=True)   
+        # ------------------------------------------------------  
+        aP_controll_pattern_ROUTE('from', leagueapi_id, pre_ah_pattern, pre_gou_pattern, end_ah_pattern, end_gou_pattern, space) 
+    # ----------------------------------------------------------  
+
+def ff_get_fixtures_group_by_only_end_patternlists(leagueapi_id, space):
+    # ----------------------------------------------------------   
+    space += "__"
+    # ---------------------------------------------------------- 
+    print(space + "ff_get_fixtures_group_by_only_end_patternlists()", flush=True)
+    # ----------------------------------------------------------    
+    space += "__"
+    # ----------------------------------------------------------  
+    host="localhost"
+    user="root" 
+    database="pr_mmbuzz_2022_06"
+    mydb = mysql.connector.connect(host=host,user=user,password="",database=database)
+    mycursor = mydb.cursor()
+    # ----------------------------------------------------------  
+    query = "Select " 
+
+    query += " end_ah_pattern " 
+    query += " , end_gou_pattern "  
+
+    query += " , count(*) "  
+
+    query += " from football_odds " 
+    query += " where leagueapi_id = '"+str(leagueapi_id)+"' " 
+    query += " and fixture_status in ('Match Finished', 'Match Finished Ended') " 
+ 
+    
+    query += " and end_ah_pattern is not null " 
+    query += " and end_gou_pattern is not null " 
+ 
+
+    query += " and end_ah_pattern != 'H' " 
+    query += " and end_gou_pattern != 'G' " 
+     
+    query += " and end_response = 3 " 
+    query += " and pattern_only is null " 
+
+    query += " group by " 
+    query += " end_ah_pattern " 
+    query += " , end_gou_pattern "  
+
+    query += " order by count(*) desc " 
+    # ----------------------------------------------------------   
+    # print(space + query)
+    # ----------------------------------------------------------   
+    mycursor = mydb.cursor()
+    mycursor.execute(query)
+    result =  mycursor.fetchall()
+    # ----------------------------------------------------------   
+    space += "__"
+    # ----------------------------------------------------------
+    total_rows = len(result)    
+    # ----------------------------------------------------------
+    print(space + "Total Row(s) : " + str(total_rows), flush=True) 
+    # close the cursor and database connection
+    mycursor.close()
+    mydb.close()
+    # ----------------------------------------------------------  
+    lg_update_total_pattern(leagueapi_id, "total_pattern_only_ends", total_rows, space)
+    # ----------------------------------------------------------  
+    counter = 0
+    # ----------------------------------------------------------   
+    space += "__"
+    # ----------------------------------------------------------   
+    for x in result:    
+        # ------------------------------------------------------
+        counter             += 1
+        # ------------------------------------------------------ 
+
+        end_ah_pattern      = str(x[0]) 
+        end_gou_pattern     = str(x[1])  
+
+        countrows           = str(x[2])  
+        # ------------------------------------------------------ 
+        word = space + "[" + str(counter) + "/" + str(total_rows) + "] " + countrows + ". " 
+        word += " >> " + end_ah_pattern  
+        word += " // " + end_gou_pattern   
+        print(word, flush=True)   
+ 
+        # ------------------------------------------------------  
+        aP_controll_pattern_ROUTE('only', leagueapi_id, 'Null', 'Null', end_ah_pattern, end_gou_pattern, space) 
+    # ----------------------------------------------------------
+
+def ff_get_fixtures_group_by_end_patternlists(leagueapi_id, space):
+    # ----------------------------------------------------------   
+    space += "__"
+    # ---------------------------------------------------------- 
+    print(space + "ff_get_fixtures_group_by_end_patternlists()", flush=True)
+    # ----------------------------------------------------------    
+    space += "__"
+    # ----------------------------------------------------------  
+    host="localhost"
+    user="root" 
+    database="pr_mmbuzz_2022_06"
+    mydb = mysql.connector.connect(host=host,user=user,password="",database=database)
+    mycursor = mydb.cursor()
+    # ----------------------------------------------------------  
+    query = "Select "
+    query += " end_ah_pattern " 
+    query += " , end_gou_pattern "  
+    query += " , count(*) "  
+
+    query += " from football_odds " 
+    query += " where leagueapi_id = '"+str(leagueapi_id)+"' " 
+    query += " and fixture_status in ('Match Finished', 'Match Finished Ended') " 
+
+    query += " and pre_ah_pattern is not null " 
+    query += " and pre_gou_pattern is not null " 
+
+    query += " and end_ah_pattern is not null " 
+    query += " and end_gou_pattern is not null " 
+    # query += " and end_ah_pattern != 'H' " 
+    # query += " and end_gou_pattern != 'G' " 
+    query += " group by pre_ah_pattern, pre_gou_pattern, end_ah_pattern, end_gou_pattern " 
+    query += " order by count(*) desc " 
+    # ----------------------------------------------------------   
+    print(space + query)
+    # ----------------------------------------------------------   
+    mycursor = mydb.cursor()
+    mycursor.execute(query)
+    result =  mycursor.fetchall()
+    # ----------------------------------------------------------   
+    space += "__"
+    # ----------------------------------------------------------    
+    print(space + "Total Row(s) : " + str(len(result)), flush=True) 
+    # close the cursor and database connection
+    mycursor.close()
+    mydb.close()
+    # ----------------------------------------------------------  
+    counter = 0
+    # ----------------------------------------------------------   
+    space += "__"
+    # ----------------------------------------------------------   
+    for x in result:    
+        # ------------------------------------------------------
+        counter             += 1
+        # ------------------------------------------------------
+        end_ah_pattern      = str(x[0]) 
+        end_gou_pattern     = str(x[1])  
+        countrows           = str(x[2])  
+        # ------------------------------------------------------ 
+        word = space + countrows + ". "
+        word += end_ah_pattern  
+        word += " // " + end_gou_pattern   
+        print(word, flush=True)   
+        # ------------------------------------------------------  
+        plN_check_patternlist_only_ends(
+            countrows,
+            leagueapi_id,  
+            # "Only Ends",  
+            # "Only Ends",  
+            end_ah_pattern,  
+            end_gou_pattern, 
+            space)
+    # ----------------------------------------------------------  
+ 
 
 def ff_get_fixtures_for_reset_pattern(leagueapi_id, season, day0, prep_col, space):
     # ----------------------------------------------------------   
@@ -32,7 +284,7 @@ def ff_get_fixtures_for_reset_pattern(leagueapi_id, season, day0, prep_col, spac
     query += " , teams_away " 
     query += " , fixture_status " 
 
-    query += " from football_fixtures " 
+    query += " from football_odds " 
     query += " where leagueapi_id = '"+str(leagueapi_id)+"' " 
     # query += " and season = '"+str(season)+"' "
     
@@ -56,6 +308,9 @@ def ff_get_fixtures_for_reset_pattern(leagueapi_id, season, day0, prep_col, spac
     result =  mycursor.fetchall()
     # ----------------------------------------------------------    
     print(space + "Total Row(s) : " + str(len(result)), flush=True) 
+    # close the cursor and database connection
+    mycursor.close()
+    mydb.close()
     # ----------------------------------------------------------  
     counter = 0
     # ----------------------------------------------------------   
@@ -104,14 +359,14 @@ def ff_get_fixture_today_xpattern_advices_preleague(leagueapi_id, season, day1, 
     query += " date,  "
     query += " fixtureapi_id,  "
 
-    query += " league_country,  "
-    query += " league_name,  "
-    query += " season,  "
+    query += " fixture_status,  "
+    query += " leagueapi_id,  "
+    query += " season  "
 
-    query += " teams_home,  "
-    query += " teams_away  "
+    # query += " teams_home,  "
+    # query += " teams_away  "
 
-    query += " from football_fixtures "    
+    query += " from football_odds "    
     # query += " where DATE(date) >= '"+str(day1)+"' "
     # query += " and DATE(date) <= '"+str(day2)+"' "
 
@@ -131,6 +386,9 @@ def ff_get_fixture_today_xpattern_advices_preleague(leagueapi_id, season, day1, 
     total_rows = len(result)
     # ----------------------------------------------------------    
     print(space + "Total Row(s) : " + str(total_rows), flush=True) 
+    # close the cursor and database connection
+    mycursor.close()
+    mydb.close()
     # ----------------------------------------------------------  
     count_rows = 0
     # ----------------------------------------------------------  
@@ -141,104 +399,107 @@ def ff_get_fixture_today_xpattern_advices_preleague(leagueapi_id, season, day1, 
         date = rs1[0]
         fixtureapi_id = rs1[1]
 
-        league_country = rs1[2]
-        league_name  = rs1[3] 
+        fixture_status = rs1[2]
+        leagueapi_id  = rs1[3] 
         season  = rs1[4]
 
-        teams_home  = rs1[5]
-        teams_away  = rs1[6]
+        # teams_home  = rs1[5]
+        # teams_away  = rs1[6]
         # ------------------------------------------------------  
         word = space + "[" +str(count_rows) + "/" + str(total_rows) + "] " + str(date)
         print(word, flush=True)  
         # ------------------------------------------------------  
-        word = space + str(league_country) + " - "
-        word += str(league_name) + " "
+        word = space + str(fixture_status) + " - "
+        word += str(leagueapi_id) + " "
         word += str(season)  
         print(word, flush=True)   
         # ------------------------------------------------------   
-        word = "#" + str(fixtureapi_id)+ "  "
-        word += str(teams_home) + " vs "
-        word += str(teams_away) 
-        print(word, flush=True)   
+        # word = "#" + str(fixtureapi_id)+ "  "
+        # word += str(teams_home) + " vs "
+        # word += str(teams_away) 
+        # print(word, flush=True)   
         # ------------------------------------------------------  
-        if(ROUTES == 'xpattern'):
-            xp_set_pattern(fixtureapi_id, 'pre_', 'yes', space)
+        # if(ROUTES == 'xpattern'):
+        #     xp_set_pattern(fixtureapi_id, 'pre_', 'yes', space)
     # ----------------------------------------------------------  
 
-def ff_get_fixture_today_xpattern_advices(day1, day2, ROUTES, space):
-    # ----------------------------------------------------------   
-    space += "__"
-    # ---------------------------------------------------------- 
-    print(space + "ff_get_fixture_today_xpattern_advices()", flush=True)
-    # ----------------------------------------------------------   
-    space += "__"
-    # ----------------------------------------------------------   
-    host="localhost"
-    user="root" 
-    database="pr_mmbuzz_2022_06"
-    mydb = mysql.connector.connect(host=host,user=user,password="",database=database)
-    mycursor = mydb.cursor()
-    # ----------------------------------------------------------  
-    query = "Select "
-    query += " date,  "
-    query += " fixtureapi_id,  "
+# def ff_get_fixture_today_xpattern_advices(day1, day2, ROUTES, space):
+#     # ----------------------------------------------------------   
+#     space += "__"
+#     # ---------------------------------------------------------- 
+#     print(space + "ff_get_fixture_today_xpattern_advices()", flush=True)
+#     # ----------------------------------------------------------   
+#     space += "__"
+#     # ----------------------------------------------------------   
+#     host="localhost"
+#     user="root" 
+#     database="pr_mmbuzz_2022_06"
+#     mydb = mysql.connector.connect(host=host,user=user,password="",database=database)
+#     mycursor = mydb.cursor()
+#     # ----------------------------------------------------------  
+#     query = "Select "
+#     query += " date,  "
+#     query += " fixtureapi_id,  "
 
-    query += " league_country,  "
-    query += " league_name,  "
-    query += " season,  "
+#     query += " league_country,  "
+#     query += " league_name,  "
+#     query += " season,  "
 
-    query += " teams_home,  "
-    query += " teams_away  "
+#     query += " teams_home,  "
+#     query += " teams_away  "
 
-    query += " from football_fixtures "    
-    query += " where DATE(date) >= '"+str(day1)+"' "
-    query += " and DATE(date) <= '"+str(day2)+"' "
-    # query += " and pre_match_winner_home is not null "
-    # query += " and pre_ah_pattern is null "
-    query += " order by date asc "
-    # ----------------------------------------------------------   
-    print(space + query)
-    # ----------------------------------------------------------  
-    mycursor = mydb.cursor()
-    mycursor.execute(query)
-    result =  mycursor.fetchall() 
-    # ----------------------------------------------------------    
-    total_rows = len(result)
-    # ----------------------------------------------------------    
-    print(space + "Total Row(s) : " + str(total_rows), flush=True) 
-    # ----------------------------------------------------------  
-    count_rows = 0
-    # ----------------------------------------------------------  
-    for rs1 in result: 
-        # ------------------------------------------------------  
-        count_rows += 1
-        # ------------------------------------------------------  
-        date = rs1[0]
-        fixtureapi_id = rs1[1]
+#     query += " from football_odds "    
+#     query += " where DATE(date) >= '"+str(day1)+"' "
+#     query += " and DATE(date) <= '"+str(day2)+"' "
+#     # query += " and pre_match_winner_home is not null "
+#     # query += " and pre_ah_pattern is null "
+#     query += " order by date asc "
+#     # ----------------------------------------------------------   
+#     print(space + query)
+#     # ----------------------------------------------------------  
+#     mycursor = mydb.cursor()
+#     mycursor.execute(query)
+#     result =  mycursor.fetchall() 
+#     # ----------------------------------------------------------    
+#     total_rows = len(result)
+#     # ----------------------------------------------------------    
+#     print(space + "Total Row(s) : " + str(total_rows), flush=True) 
+    # # close the cursor and database connection
+    # mycursor.close()
+    # mydb.close()
+#     # ----------------------------------------------------------  
+#     count_rows = 0
+#     # ----------------------------------------------------------  
+#     for rs1 in result: 
+#         # ------------------------------------------------------  
+#         count_rows += 1
+#         # ------------------------------------------------------  
+#         date = rs1[0]
+#         fixtureapi_id = rs1[1]
 
-        league_country = rs1[2]
-        league_name  = rs1[3] 
-        season  = rs1[4]
+#         league_country = rs1[2]
+#         league_name  = rs1[3] 
+#         season  = rs1[4]
 
-        teams_home  = rs1[5]
-        teams_away  = rs1[6]
-        # ------------------------------------------------------  
-        word = space + "[" +str(count_rows) + "/" + str(total_rows) + "] " + str(date)
-        print(word, flush=True)  
-        # ------------------------------------------------------  
-        word = space + str(league_country) + " - "
-        word += str(league_name) + " "
-        word += str(season)  
-        print(word, flush=True)   
-        # ------------------------------------------------------   
-        word = "#" + str(fixtureapi_id)+ "  "
-        word += str(teams_home) + " vs "
-        word += str(teams_away) 
-        print(word, flush=True)   
-        # ------------------------------------------------------  
-        if(ROUTES == 'xpattern'):
-            xp_set_pattern(fixtureapi_id, 'pre_', 'yes', space)
-    # ----------------------------------------------------------  
+#         teams_home  = rs1[5]
+#         teams_away  = rs1[6]
+#         # ------------------------------------------------------  
+#         word = space + "[" +str(count_rows) + "/" + str(total_rows) + "] " + str(date)
+#         print(word, flush=True)  
+#         # ------------------------------------------------------  
+#         word = space + str(league_country) + " - "
+#         word += str(league_name) + " "
+#         word += str(season)  
+#         print(word, flush=True)   
+#         # ------------------------------------------------------   
+#         word = "#" + str(fixtureapi_id)+ "  "
+#         word += str(teams_home) + " vs "
+#         word += str(teams_away) 
+#         print(word, flush=True)   
+#         # ------------------------------------------------------  
+#         if(ROUTES == 'xpattern'):
+#             xp_set_pattern(fixtureapi_id, 'pre_', 'yes', space)
+#     # ----------------------------------------------------------  
 
 def ff_get_fixture_status_match_finished_for_daily_update_patternlist_by_leagueapi_id(leagueapi_id, season, day1, day2, space):
     # ----------------------------------------------------------   
@@ -272,7 +533,7 @@ def ff_get_fixture_status_match_finished_for_daily_update_patternlist_by_leaguea
     query += " , end_odd_updated_at " 
     query += " , fixture_status " 
 
-    query += " from football_fixtures "    
+    query += " from football_odds "    
     query += " where date = '"+str(leagueapi_id)+"' "
     query += " and season = '"+str(season)+"' "  
     query += " and date <= '"+day2+"' "
@@ -290,6 +551,9 @@ def ff_get_fixture_status_match_finished_for_daily_update_patternlist_by_leaguea
     total_rows = len(result)
     # ----------------------------------------------------------    
     print(space + "Total Row(s) : " + str(total_rows), flush=True) 
+    # close the cursor and database connection
+    mycursor.close()
+    mydb.close()
     # ----------------------------------------------------------  
     count_rows = 0
     # ----------------------------------------------------------    
@@ -384,7 +648,7 @@ def ff_get_fixture_status_match_finished_for_daily_update_patternlist(day1, day2
     query += " , end_odd_updated_at " 
     query += " , fixture_status " 
 
-    query += " from football_fixtures "    
+    query += " from football_odds "    
     query += " where date <= '"+day2+"' "
     query += " and date >= '"+day1+"' "  
     query += " and end_odd_updated_at is not null "  
@@ -400,6 +664,9 @@ def ff_get_fixture_status_match_finished_for_daily_update_patternlist(day1, day2
     total_rows = len(result)
     # ----------------------------------------------------------    
     print(space + "Total Row(s) : " + str(total_rows), flush=True) 
+    # close the cursor and database connection
+    mycursor.close()
+    mydb.close()
     # ----------------------------------------------------------  
     count_rows = 0
     # ----------------------------------------------------------    
@@ -476,13 +743,13 @@ def ff_get_fixture_status_match_finished_by_league(leagueapi_id, season, day1, d
     # ----------------------------------------------------------  
     query = "Select DATE(date), leagueapi_id, "
     query += " (select bookmakersapi_id from leagues "
-    query += "  where leagues.leagueapi_id = football_fixtures.leagueapi_id), "
+    query += "  where leagues.leagueapi_id = football_odds.leagueapi_id), "
     query += " season,  "
     query += " fixtureapi_id,  "
     query += " pre_ah_pattern,  "
     query += " pre_gou_pattern,  "
     query += " fixture_status  "
-    query += " from football_fixtures "    
+    query += " from football_odds "    
     query += " where leagueapi_id = '"+str(leagueapi_id)+"' "
     query += " and season = '"+str(season)+"' "  
     query += " and date <= '"+day2+"' "
@@ -502,6 +769,9 @@ def ff_get_fixture_status_match_finished_by_league(leagueapi_id, season, day1, d
     total_rows = len(result)
     # ----------------------------------------------------------    
     print(space + "Total Row(s) : " + str(total_rows), flush=True) 
+    # close the cursor and database connection
+    mycursor.close()
+    mydb.close()
     # ----------------------------------------------------------  
     count_rows = 0
     # ----------------------------------------------------------  
@@ -536,85 +806,6 @@ def ff_get_fixture_status_match_finished_by_league(leagueapi_id, season, day1, d
             xp_set_pattern(fixtureapi_id, 'end_', 'no', space)
     # ----------------------------------------------------------  
 
-def ff_get_fixture_status_match_finished(day1, day2, ROUTES, space):
-    # ----------------------------------------------------------   
-    space += "__"
-    # ---------------------------------------------------------- 
-    print(space + "ff_get_fixture_status_match_finished()", flush=True)
-    # ----------------------------------------------------------  
-    host="localhost"
-    user="root" 
-    database="pr_mmbuzz_2022_06"
-    mydb = mysql.connector.connect(host=host,user=user,password="",database=database)
-    mycursor = mydb.cursor()
-    # ----------------------------------------------------------  
-    query = "Select DATE(date), leagueapi_id, "
-    query += " (select bookmakersapi_id from leagues "
-    query += "  where leagues.leagueapi_id = football_fixtures.leagueapi_id), "
-    query += " season,  "
-    query += " fixtureapi_id,  "
-    query += " pre_ah_pattern,  "
-    query += " pre_gou_pattern,  "
-    query += " fixture_status  "
-    query += " from football_fixtures "     
-    if(ROUTES == 'odds'):
-        query += " where date <= '"+day2+"' "
-        query += " and date >= '"+day1+"' "  
-        query += " and fixture_status like 'Match Finished' "
-    elif(ROUTES == 'xpattern'):
-        query += " where date <= '"+day2+"' "
-        query += " and date >= '"+day1+"' "  
-        query += " and fixture_status like 'Match Finished Ended' "
-    elif(ROUTES == 'one_xpattern'):
-        query += " where one = 1 " 
-    query += " and deleted_at is null "  
-    query += " order by date desc"  
-    # ----------------------------------------------------------   
-    mycursor = mydb.cursor()
-    mycursor.execute(query)
-    result =  mycursor.fetchall() 
-    # ----------------------------------------------------------     
-    space += "__"
-    total_rows = len(result)
-    # ----------------------------------------------------------    
-    print(space + "Total Row(s) : " + str(total_rows), flush=True) 
-    # ----------------------------------------------------------  
-    count_rows = 0
-    # ----------------------------------------------------------  
-    for rs1 in result: 
-        # ------------------------------------------------------  
-        count_rows += 1
-        # ------------------------------------------------------  
-        date = rs1[0]
-        league = rs1[1]
-        bookmaker = rs1[2]
-        season  = rs1[3]
-
-        fixtureapi_id  = rs1[4]
-        pre_ah_pattern  = rs1[5]
-        pre_gou_pattern  = rs1[6]
-        fixture_status  = rs1[7]
-        # ------------------------------------------------------  
-        words_001 = space + str(count_rows) + ". "
-        words_001 += str(date) + " // "
-        words_001 += str(league) + " // "
-        words_001 += str(bookmaker) + " // "
-        words_001 += str(season)+ " // "
-        words_001 += str(fixtureapi_id)+ " // "
-        words_001 += str(pre_ah_pattern)+ " // "
-        words_001 += str(pre_gou_pattern)+ " // "
-        words_001 += str(fixture_status)
-        # ------------------------------------------------------  
-        words =  words_001
-        print(words, flush=True)  
-        # ------------------------------------------------------  
-        if(ROUTES == 'xpattern'):
-            xp_set_pattern(fixtureapi_id, 'end_', 'no', space)
-        elif(ROUTES == 'one_xpattern'):
-            xp_set_pattern(fixtureapi_id, 'pre_', 'yes', space)
-            xp_set_pattern(fixtureapi_id, 'end_', 'yes', space)
-            # xp_set_pattern(fixtureapi_id, prep_col, advice_status, space)
-    # ----------------------------------------------------------  
 
 def ff_get_group_date_league_status_match_finished(leagueapi_id, season, day1, day2, space):
     # ----------------------------------------------------------   
@@ -634,9 +825,9 @@ def ff_get_group_date_league_status_match_finished(leagueapi_id, season, day1, d
     # 
     query = "Select DATE(date), leagueapi_id, "
     query += " (select bookmakersapi_id from leagues "
-    query += "  where leagues.leagueapi_id = football_fixtures.leagueapi_id), "
+    query += "  where leagues.leagueapi_id = football_oddsx.leagueapi_id), "
     query += " season  "
-    query += " from football_fixtures "    
+    query += " from football_oddsx "    
     query += " where leagueapi_id = '"+str(leagueapi_id)+"' "
     query += " and season = '"+str(season)+"' "  
     query += " and date <= '"+day2+"' "
@@ -657,6 +848,9 @@ def ff_get_group_date_league_status_match_finished(leagueapi_id, season, day1, d
     total_rows = len(result)
     # ----------------------------------------------------------    
     print(space + "Total Row(s) : " + str(total_rows), flush=True) 
+    # close the cursor and database connection
+    mycursor.close()
+    mydb.close()
     # ----------------------------------------------------------    
     count_rows = 0  
     # ---------------------------------------------------------- 
@@ -698,183 +892,6 @@ def ff_get_group_date_league_status_match_finished(leagueapi_id, season, day1, d
     # ------------------------------------------------------
 
 
-def ff_get_fixture_one(space):
-    # ----------------------------------------------------------   
-    space += "__"
-    # ---------------------------------------------------------- 
-    print(space + "ff_get_fixture_one()", flush=True)
-    # ----------------------------------------------------------  
-    host="localhost"
-    user="root" 
-    database="pr_mmbuzz_2022_06"
-    mydb = mysql.connector.connect(host=host,user=user,password="",database=database)
-    mycursor = mydb.cursor()
-    # ----------------------------------------------------------  
-    #
-    # always double check to ff_get_fixture_status_match_finished
-    # same query
-    # 
-    query = "Select DATE(date), leagueapi_id, "
-    query += " (select bookmakersapi_id from leagues "
-    query += " where leagues.leagueapi_id = football_fixtures.leagueapi_id), "
-    query += " season, "
-    query += " DATE(end_odd_updated_at), "
-    query += " fixture_status, "
-    query += " fixtureapi_id  "
-
-    query += " from football_fixtures "    
-
-    query += " where one = 1 "  
-    query += " order by date "  
-    # query += " limit 0,2 "  
-    # ----------------------------------------------------------   
-    print(space + query, flush=True)
-    # ----------------------------------------------------------   
-    mycursor = mydb.cursor()
-    mycursor.execute(query)
-    result =  mycursor.fetchall() 
-    # ----------------------------------------------------------    
-    space += "__"
-    total_rows = len(result)
-    # ----------------------------------------------------------    
-    print(space + "Total Row(s) : " + str(total_rows), flush=True) 
-    # ----------------------------------------------------------    
-    count_rows = 0  
-    # ----------------------------------------------------------   
-    space += "__"
-    # ----------------------------------------------------------  
-    for rs1 in result: 
-        # ------------------------------------------------------  
-        count_rows += 1
-        # ------------------------------------------------------  
-        date = rs1[0]
-        league = rs1[1]
-        bookmaker = rs1[2]
-        season  = rs1[3]
-        # ------------------------------------------------------  
-        end_odd_updated_at  = rs1[4]
-        fixture_status  = rs1[5]
-        fixtureapi_id  = rs1[6]
-        # ------------------------------------------------------  
-        words_001 = space + str(count_rows) + ". "
-        words_001 += str(date) + " // "
-        words_001 += str(league) + " // "
-        words_001 += str(bookmaker) + " // "
-        words_001 += str(season) + " // "
-        words_001 += str(end_odd_updated_at) + " // "
-        words_001 += str(fixture_status) + " // "
-        words_001 += str(fixtureapi_id)
-        # ------------------------------------------------------  
-        words =  words_001
-        print(words, flush=True) 
-        # ------------------------------------------------------  
-        DICT = {
-            "fixture" : fixtureapi_id,
-            "bookmaker" : bookmaker, 
-        } 
-        ao_controll_match_update(DICT, 'one_', space) 
-        # ------------------------------------------------------  
-    # ----------------------------------------------------------  
-
-
-def ff_get_group_league_status_match_finished(day1, day2, today, space):
-    # ----------------------------------------------------------   
-    space += "__"
-    # ---------------------------------------------------------- 
-    print(space + "ff_get_group_league_status_match_finished()", flush=True)
-    # ----------------------------------------------------------  
-    host="localhost"
-    user="root" 
-    database="pr_mmbuzz_2022_06"
-    mydb = mysql.connector.connect(host=host,user=user,password="",database=database)
-    mycursor = mydb.cursor()
-    # ----------------------------------------------------------  
-    #
-    # always double check to ff_get_fixture_status_match_finished
-    # same query
-    # 
-    query = "Select DATE(date), leagueapi_id, "
-    query += " (select bookmakersapi_id from leagues "
-    query += " where leagues.leagueapi_id = football_fixtures.leagueapi_id), "
-    query += " season, "
-    query += " DATE(end_odd_updated_at), "
-    query += " fixture_status  "
-
-    query += " from football_fixtures "    
-
-    query += " where ( date <= '"+day2+"' "
-    query += " and date >= '"+day1+"' "  
-    query += " and fixture_status like 'Match Finished' "
-    query += " and deleted_at is null " 
-    query += " and end_odd_updated_at is null ) " 
-    query += " or "
-    query += " (date <= '"+day2+"' "
-    query += " and date >= '"+day1+"' "  
-    query += " and fixture_status like 'Match Finished' "
-    query += " and deleted_at is null " 
-    query += " and DATE(end_odd_updated_at) < DATE('"+str(today)+"') ) " 
-
-
-
-    query += " group by DATE(date), leagueapi_id, season "
-    query += " order by leagueapi_id "  
-    # query += " limit 0,2 "  
-    # ----------------------------------------------------------   
-    print(space + query, flush=True)
-    # ----------------------------------------------------------   
-    mycursor = mydb.cursor()
-    mycursor.execute(query)
-    result =  mycursor.fetchall() 
-    # ----------------------------------------------------------    
-    space += "__"
-    total_rows = len(result)
-    # ----------------------------------------------------------    
-    print(space + "Total Row(s) : " + str(total_rows), flush=True) 
-    # ----------------------------------------------------------    
-    count_rows = 0  
-    # ---------------------------------------------------------- 
-    ff_get_fixture_status_match_finished(day1, day2, 'odds', space)
-    # ----------------------------------------------------------   
-    continue_ = input(space + "Are you sure want to continue? :  ")
-    # ----------------------------------------------------------  
-    if(total_rows > 0 and continue_ == 'yes'):
-        # ------------------------------------------------------
-        space += "__"
-        # ------------------------------------------------------
-        for rs1 in result: 
-            # --------------------------------------------------  
-            count_rows += 1
-            # -------------------------------------------------- 
-            date = rs1[0]
-            league = rs1[1]
-            bookmaker = rs1[2]
-            season  = rs1[3]
-
-            end_odd_updated_at  = rs1[4]
-            fixture_status  = rs1[5]
-            # --------------------------------------------------
-            words_001 = space + str(count_rows) + ". "
-            words_001 += str(date) + " // "
-            words_001 += str(league) + " // "
-            words_001 += str(bookmaker) + " // "
-            words_001 += str(season)+ " // "
-            words_001 += str(end_odd_updated_at)+ " // "
-            words_001 += str(fixture_status)
-            # -------------------------------------------------- 
-            words =  words_001
-            print(words, flush=True) 
-            # --------------------------------------------------  
-            DICT = {
-                "date" : date,
-                "bookmaker" : bookmaker,
-                "season" : season,
-                "league" : league,
-                "page" : 1,
-            }
-            # ao_controll_match_update(date, bookmaker, season, league, 1, space) 
-            ao_controll_match_update(DICT, 'end_', space) 
-        # ------------------------------------------------------
-    # ----------------------------------------------------------  
 
 # def ff_get_team_list_next_match(leagueapi_id, season, space):
 #     # ----------------------------------------------------------   
@@ -891,14 +908,14 @@ def ff_get_group_league_status_match_finished(day1, day2, today, space):
 #     mycursor = mydb.cursor()  
 #     # ----------------------------------------------------------  
 #     query = "( Select leagueapi_id, season, teams_home_id as team_id, teams_home as name  "
-#     query += " from football_fixtures " 
+#     query += " from football_odds " 
 #     query += " where leagueapi_id = '"+leagueapi_id+"' " 
 #     query += " and season = '"+season+"' " 
 #     query += " and deleted_at is null "  
 #     query += " group by leagueapi_id, season, teams_home_id, teams_home ) " 
 #     query += " union all "  
 #     query = "( Select leagueapi_id, season, teams_away_id as team_id, teams_away as name  "
-#     query += " from football_fixtures " 
+#     query += " from football_odds " 
 #     query += " where leagueapi_id = '"+leagueapi_id+"' " 
 #     query += " and season = '"+season+"' " 
 #     query += " and deleted_at is null "  
@@ -912,6 +929,9 @@ def ff_get_group_league_status_match_finished(day1, day2, today, space):
 #     result =  mycursor.fetchall()
 #     # ----------------------------------------------------------    
 #     print(space + "Total Row(s) : " + str(len(result)), flush=True) 
+        # # close the cursor and database connection
+        # mycursor.close()
+        # mydb.close()
 #     # ----------------------------------------------------------    
 #     counter = 0
 #     # ----------------------------------------------------------   
@@ -964,7 +984,7 @@ def ff_get_teams_from_fixtures(fixtureapi_id, space):
     query += " season, "   
     query += " fixtureapi_id "  
     
-    query += " from football_fixtures " 
+    query += " from football_odds " 
     query += " where fixtureapi_id = '"+str(fixtureapi_id)+"' "  
     # ----------------------------------------------------------   
     # print(space + query)
@@ -975,6 +995,9 @@ def ff_get_teams_from_fixtures(fixtureapi_id, space):
     # ----------------------------------------------------------   
     total_rows = len(result)
     print(space + "Total Row(s) : " + str(total_rows), flush=True)     
+    # close the cursor and database connection
+    mycursor.close()
+    mydb.close()
     # ----------------------------------------------------------  
     counter = 0 
     # ----------------------------------------------------------  
@@ -1022,7 +1045,7 @@ def ff_get_fixtures_next_match(day0, day1, space):
     query += " teams_away, " 
     query += " date " 
     
-    query += " from football_fixtures " 
+    query += " from football_odds " 
     query += " where date >= '"+str(day0)+"' " 
     query += " and date <= '"+str(day1)+"' " 
     query += " and fixture_status like 'Not Started' " 
@@ -1037,6 +1060,9 @@ def ff_get_fixtures_next_match(day0, day1, space):
     # ----------------------------------------------------------   
     total_rows = len(result)
     print(space + "Total Row(s) : " + str(total_rows), flush=True)     
+    # close the cursor and database connection
+    mycursor.close()
+    mydb.close()
     # ----------------------------------------------------------  
     counter = 0 
     # ----------------------------------------------------------  
@@ -1110,7 +1136,7 @@ def ff_get_fixt_next_match(day0, day1, space):
     query += " teams_away, " 
     query += " date " 
     
-    query += " from football_fixtures " 
+    query += " from football_odds " 
     query += " where date >= '"+str(day0)+"' " 
     query += " and date <= '"+str(day1)+"' " 
     query += " and fixture_status like 'Not Started' " 
@@ -1125,6 +1151,9 @@ def ff_get_fixt_next_match(day0, day1, space):
     # ----------------------------------------------------------   
     total_rows = len(result)
     print(space + "Total Row(s) : " + str(total_rows), flush=True)     
+    # close the cursor and database connection
+    mycursor.close()
+    mydb.close()
     # ----------------------------------------------------------  
     counter = 0 
     # ----------------------------------------------------------  
@@ -1191,7 +1220,7 @@ def ff_get_fixtures_not_started_yet(day0, day1, space):
     query += " teams_away, " 
     query += " date " 
     
-    query += " from football_fixtures " 
+    query += " from football_odds " 
     query += " where date >= '"+str(day0)+"' " 
     query += " and date <= '"+str(day1)+"' " 
     query += " and fixture_status like 'Not Started Yet' " 
@@ -1206,6 +1235,9 @@ def ff_get_fixtures_not_started_yet(day0, day1, space):
     # ----------------------------------------------------------   
     total_rows = len(result)
     print(space + "Total Row(s) : " + str(total_rows), flush=True)     
+    # close the cursor and database connection
+    mycursor.close()
+    mydb.close()
     # ----------------------------------------------------------  
     counter = 0 
     # ----------------------------------------------------------  
@@ -1258,9 +1290,9 @@ def ff_get_fixtures_not_started_yet(day0, day1, space):
             word += " - " + teams_away_id
             print(word, flush=True)   
             # --------------------------------------------------
-            ROUTES = "fixtureapi_id"
+            ROUTES = "not_started_yet"
             DICT = {
-                "fixtureapi_id" : fixtureapi_id
+                "fixtureapi_id" : fixtureapi_id 
             }
             af_controll_match_update(DICT, ROUTES, space)
         # ------------------------------------------------------ 
@@ -1293,7 +1325,7 @@ def ff_get_fixtures_next_match(day0, day1, space):
     query += " teams_away, " 
     query += " date " 
     
-    query += " from football_fixtures " 
+    query += " from football_odds " 
     query += " where date >= '"+str(day0)+"' " 
     query += " and date <= '"+str(day1)+"' " 
     query += " and fixture_status like 'Not Started' " 
@@ -1307,7 +1339,10 @@ def ff_get_fixtures_next_match(day0, day1, space):
     result =  mycursor.fetchall()
     # ----------------------------------------------------------   
     total_rows = len(result)
-    print(space + "Total Row(s) : " + str(total_rows), flush=True)     
+    print(space + "Total Row(s) : " + str(total_rows), flush=True)    
+    # close the cursor and database connection
+    mycursor.close()
+    mydb.close() 
     # ----------------------------------------------------------  
     counter = 0 
     # ----------------------------------------------------------  
@@ -1379,7 +1414,7 @@ def ff_get_league_group_next_match_ARRAY(day0, day1, space):
     mycursor = mydb.cursor()
     # ----------------------------------------------------------  
     query = "Select leagueapi_id, league_name, league_country, season  "
-    query += " from football_fixtures " 
+    query += " from football_odds " 
     query += " where date >= '"+str(day0)+"' " 
     query += " and date <= '"+str(day1)+"' " 
     query += " and deleted_at is null "   
@@ -1410,7 +1445,7 @@ def ff_league_check_end_odd_update(leagueapi_id, season, space):
     mycursor = mydb.cursor()
     # ----------------------------------------------------------  
     query = "Select end_odd_updated_at "
-    query += " from football_fixtures " 
+    query += " from football_odds " 
     query += " where leagueapi_id = '"+str(leagueapi_id)+"' "  
     query += " and season = '"+str(season)+"' "  
     query += " and deleted_at is null "  
@@ -1427,6 +1462,9 @@ def ff_league_check_end_odd_update(leagueapi_id, season, space):
     total_rows = len(result)
     # ----------------------------------------------------------     
     print(space + "Total Row(s) : " + str(total_rows), flush=True) 
+    # close the cursor and database connection
+    mycursor.close()
+    mydb.close()
     # ----------------------------------------------------------  
     counter = 0
     # ----------------------------------------------------------   
@@ -1445,100 +1483,6 @@ def ff_league_check_end_odd_update(leagueapi_id, season, space):
     # ----------------------------------------------------------   
 
 
-def ff_gak_sempet_predates(day0, date_raw, space):
-    # ----------------------------------------------------------   
-    space += "__"
-    # ---------------------------------------------------------- 
-    print(space + "ff_gak_sempet_predates()", flush=True)
-    # ----------------------------------------------------------    
-    space += "__"
-    # ----------------------------------------------------------  
-    host="localhost"
-    user="root" 
-    database="pr_mmbuzz_2022_06"
-    mydb = mysql.connector.connect(host=host,user=user,password="",database=database)
-    mycursor = mydb.cursor()
-    # ----------------------------------------------------------  
-    query = "Select leagueapi_id, league_name, league_country, season, DATE(date),  "
-    query += " (select bookmakersapi_id from leagues "
-    query += "  where leagues.leagueapi_id = football_fixtures.leagueapi_id) "
-    query += " from football_fixtures " 
-    query += " where date = '"+day0+"' "  
-    query += " and deleted_at is null "  
-    query += " and pre_odd_updated_at is null "    
-    query += " group by leagueapi_id, league_name, league_country, season, DATE(date) "
-    query += " order by league_country, leagueapi_id asc  "   
-    # ----------------------------------------------------------   
-    print(space + query)
-    # ----------------------------------------------------------   
-    mycursor = mydb.cursor()
-    mycursor.execute(query)
-    result =  mycursor.fetchall()
-    # ----------------------------------------------------------    
-    total_rows = len(result)
-    # ----------------------------------------------------------    
-
-    print(space + "Total Row(s) : " + str(total_rows), flush=True) 
-    # ----------------------------------------------------------  
-    counter = 0
-    # ----------------------------------------------------------   
-    space += "__"
-    # ----------------------------------------------------------   
-    for x in result:    
-        # ------------------------------------------------------
-        counter        += 1
-        league   = str(x[0]) 
-        league_name    = str(x[1]) 
-        league_country = str(x[2])  
-        season         = str(x[3])   
-        date            = str(x[4])   
-        bookmaker            = str(x[5])   
-        # ------------------------------------------------------
-        word = space + "[" + str(counter) + "/" +str(len(result)) + "] " + league_country
-        word += " - " + league_name
-        word += " -----#" + league 
-        word += " - " + season 
-        word += " - " + date 
-        word += " - " + bookmaker 
-        print(word, flush=True)   
-        # ------------------------------------------------------  
-
-    # ----------------------------------------------------------   
-    continue_ = input(space + "Are you sure want to continue? :  ")
-    # ----------------------------------------------------------   
-    counter = 0
-    # ----------------------------------------------------------  
-    if(total_rows > 0 and continue_ == 'yes'):   
-        for x in result:    
-            # ------------------------------------------------------
-            counter        += 1
-            league   = str(x[0]) 
-            league_name    = str(x[1]) 
-            league_country = str(x[2])  
-            season         = str(x[3])   
-            date            = str(x[4])   
-            bookmaker            = str(x[5])   
-            # ------------------------------------------------------
-            word = space + "[" + str(counter) + "/" +str(len(result)) + "] " + league_country
-            word += " - " + league_name
-            word += " -----#" + league 
-            word += " - " + season 
-            word += " - " + date 
-            word += " - " + bookmaker 
-            print(word, flush=True)   
-            # ------------------------------------------------------
-            DICT = {
-                "date" : date,
-                "date_raw" : date_raw,
-                "bookmaker" : bookmaker,
-                "season" : season,
-                "league" : league,
-                "page" : 1,
-            }
-            # ao_controll_match_update(date, bookmaker, season, league, 1, space) 
-            ao_controll_match_update(DICT, 'preleague_', space) 
-            #------------------------------------------------------
-
 def ff_get_league_group_next_match(day0, day1, space):
     # ----------------------------------------------------------   
     space += "__"
@@ -1554,7 +1498,7 @@ def ff_get_league_group_next_match(day0, day1, space):
     mycursor = mydb.cursor()
     # ----------------------------------------------------------  
     query = "Select leagueapi_id, league_name, league_country, season  "
-    query += " from football_fixtures " 
+    query += " from football_odds " 
     query += " where date >= '"+day0+"' " 
     query += " and date <= '"+day1+"' " 
     query += " and deleted_at is null "  
@@ -1571,6 +1515,9 @@ def ff_get_league_group_next_match(day0, day1, space):
     result =  mycursor.fetchall()
     # ----------------------------------------------------------    
     print(space + "Total Row(s) : " + str(len(result)), flush=True) 
+    # close the cursor and database connection
+    mycursor.close()
+    mydb.close()
     # ----------------------------------------------------------  
     counter = 0
     # ----------------------------------------------------------   
@@ -1596,161 +1543,9 @@ def ff_get_league_group_next_match(day0, day1, space):
         st_get_team_rank(leagueapi_id, season, day0, space)
     # ----------------------------------------------------------   
 
-def ff_get_fixture_that_fixture_status_not_in_match_finished(day1, day2, today, space):
-    # ----------------------------------------------------------   
-    space += "__"
-    # ---------------------------------------------------------- 
-    print(space + "ff_get_fixture_that_fixture_status_not_in_match_finished()", flush=True)
-    # ----------------------------------------------------------  
-    host="localhost"
-    user="root" 
-    database="pr_mmbuzz_2022_06"
-    mydb = mysql.connector.connect(host=host,user=user,password="",database=database)
-    mycursor = mydb.cursor()
-    # ----------------------------------------------------------  
-    query = " Select leagueapi_id "
-    query += " , league_name "
-    query += " , league_country "
-    query += " , season  "
-    query += " , teams_home " 
-    query += " , teams_away " 
-    query += " , fixture_status " 
-    query += " , DATE(updated_at) " 
-    query += " , date " 
-    query += " from football_fixtures " 
-    query += " where date <= '"+day2+"' "
-    query += " and date >= '"+day1+"' "
-    query += " and deleted_at is null "
-    query += " and fixture_status not in ('Match Finished', 'Match Finished Ended' " 
-    query += " ) "
-    query += " and deleted_at is null "
-    query += " and DATE(updated_at) != '"+str(today)+"' " 
-    query += " order by date, leagueapi_id asc  "  
-    # ----------------------------------------------------------   
-    print(space + query)
-    # ----------------------------------------------------------   
-    mycursor = mydb.cursor()
-    mycursor.execute(query)
-    result =  mycursor.fetchall()
-    # ---------------------------------------------------------- 
-    total_rows = len(result)
-    print(space + "Total Row(s) : " + str(total_rows), flush=True) 
-    # ---------------------------------------------------------- 
-    counter = 0
-    # ----------------------------------------------------------   
-    for x in result:    
-        # ------------------------------------------------------
-        counter        += 1
-        leagueapi_id   = str(x[0]) 
-        league_name    = str(x[1]) 
-        league_country = str(x[2])  
-        season         = str(x[3])  
+ 
 
-        teams_home      = str(x[4]) 
-        teams_away      = str(x[5])  
-        fixture_status  = str(x[6])  
-
-        updated_at  = str(x[7])  
-        date  = str(x[8])  
-        # ------------------------------------------------------
-        word = space + "[" + str(counter) + "/" +str(total_rows) + "] " + leagueapi_id 
-        word += " - " + season
-        word += " / " + teams_home
-        word += " vs " + teams_away
-        word += " / " + fixture_status
-        word += " / " + updated_at
-        word += " / " + date
-        print(word, flush=True)    
-        # ------------------------------------------------------
-    # ----------------------------------------------------------
-
-def ff_get_league_group_fixture_status_not_in_match_finished(day1, day2, today, space):
-    # ----------------------------------------------------------   
-    space += "__"
-    # ---------------------------------------------------------- 
-    print(space + "ff_get_league_group_fixture_status_not_in_match_finished()", flush=True)
-    # ----------------------------------------------------------  
-    host="localhost"
-    user="root" 
-    database="pr_mmbuzz_2022_06"
-    mydb = mysql.connector.connect(host=host,user=user,password="",database=database)
-    mycursor = mydb.cursor()
-    # ----------------------------------------------------------  
-    query = " Select leagueapi_id, league_name, league_country, season  "
-    query += " from football_fixtures " 
-    query += " where date <= '"+day2+"' "
-    query += " and date >= '"+day1+"' "
-    query += " and deleted_at is null "
-    query += " and fixture_status not in ('Match Finished', 'Match Finished Ended' " 
-    query += " ) "
-    query += " and deleted_at is null "
-    query += " and DATE(updated_at) != '"+str(today)+"' "
-    query += " group by leagueapi_id, league_name, league_country, season "
-    query += " order by date, leagueapi_id asc  "  
-    # ----------------------------------------------------------   
-    print(space + query)
-    # ----------------------------------------------------------   
-    mycursor = mydb.cursor()
-    mycursor.execute(query)
-    result =  mycursor.fetchall()
-    # ---------------------------------------------------------- 
-    total_rows = len(result)
-    print(space + "Total Row(s) : " + str(total_rows), flush=True) 
-    # ---------------------------------------------------------- 
-    counter = 0
-    # ----------------------------------------------------------   
-    for x in result:    
-        # ------------------------------------------------------
-        counter        += 1
-        leagueapi_id   = str(x[0]) 
-        league_name    = str(x[1]) 
-        league_country = str(x[2])  
-        season         = str(x[3])  
-        # ------------------------------------------------------
-        word = space + "[" + str(counter) + "/" +str(total_rows) + "] " + league_country
-        word += " - " + league_name
-        word += " -----#" + leagueapi_id 
-        word += " - " + season
-        print(word, flush=True)    
-    # ----------------------------------------------------------   
-    ff_get_fixture_that_fixture_status_not_in_match_finished(day1, day2, today, space) 
-    # ----------------------------------------------------------   
-    continue_ = input(space + "Are you sure want to continue? :  ")
-    # ----------------------------------------------------------   
-    counter = 0
-    # ----------------------------------------------------------  
-    if(total_rows > 0 and continue_ == 'yes'):   
-        # ------------------------------------------------------  
-        for x in result:    
-            # --------------------------------------------------
-            counter        += 1
-            leagueapi_id   = str(x[0]) 
-            league_name    = str(x[1]) 
-            league_country = str(x[2])  
-            season         = str(x[3])  
-            # --------------------------------------------------
-            word = space + "[" + str(counter) + "/" +str(total_rows) + "] " + league_country
-            word += " - " + league_name
-            word += " -----#" + leagueapi_id 
-            word += " - " + season
-            print(word, flush=True)   
-            # ---------------------------------------------------
-            # --------------------------------------------------- 
-            DICT = {
-                'leagueapi_id' :leagueapi_id,
-                'season' :season,
-                'day1' :day1,
-                'day2' :day2,
-            }
-            # --------------------------------------------------- 
-            ROUTES = 'leagueapi_id'
-            af_controll_match_update(DICT, ROUTES, space)
-            # --------------------------------------------------- 
-            print("  ___________________________________________________", flush=True)
-    # ---------------------------------------------------------- 
-    # ----------------------------------------------------------   
         
-   
 def ff_get_fixture_that_not_update_stats(leagueapi_id, season, space):
     # ----------------------------------------------------------   
     space += "__"
@@ -1766,10 +1561,11 @@ def ff_get_fixture_that_not_update_stats(leagueapi_id, season, space):
     query = ' SELECT  '
     query += ' leagueapi_id '  
     query += ' , season '  
-    query += " , teams_home " 
-    query += " , teams_away " 
+    query += " ,  	teams_homeapi_id " 
+    query += " ,  	teams_awayapi_id " 
     query += ' , date '   
-    query += 'FROM football_fixtures' 
+    query += ' , fixtureapi_id '   
+    query += 'FROM football_statistics' 
     query += " WHERE leagueapi_id = '"+str(leagueapi_id)+"' "
     query += " and season = '"+str(season)+"' "
     query += " and fixture_status in ('Match Finished', 'Match Finished Ended') "   
@@ -1784,6 +1580,9 @@ def ff_get_fixture_that_not_update_stats(leagueapi_id, season, space):
     # ---------------------------------------------------------- 
     total_rows = len(result)
     print(space + "Total Row(s) : " + str(total_rows), flush=True) 
+    # close the cursor and database connection
+    mycursor.close()
+    mydb.close()
     # ---------------------------------------------------------- 
     counter = 0
     # ----------------------------------------------------------   
@@ -1797,191 +1596,124 @@ def ff_get_fixture_that_not_update_stats(leagueapi_id, season, space):
         teams_away         = str(x[3])  
 
         date         = str(x[4])  
+        fixtureapi_id         = str(x[5])  
         # ------------------------------------------------------
         word = space + "[" + str(counter) + "/" +str(total_rows) + "] " 
-        word += "#" + leagueapi_id 
+        word += "#" + fixtureapi_id 
+        word += " #" + leagueapi_id 
         word += " - " + season
         word += " - " + teams_home
         word += " vs " + teams_away
         print(word, flush=True)            
+        # ------------------------------------------------------ 
+        DICT = {
+            "fixtureapi_id" : fixtureapi_id, 
+        } 
+        af_controll_match_update(DICT, "fixtureapi_id", space)
+        # ------------------------------------------------------
+    # ----------------------------------------------------------  
 
         
-def ff_get_fixture_that_not_update_stats(leagueapi_id, season, space):
-    # ----------------------------------------------------------   
-    space += "__"
-    # ---------------------------------------------------------- 
-    print(space + "ff_get_fixture_that_not_update_stats()", flush=True)
-    # ----------------------------------------------------------  
-    host="localhost"
-    user="root" 
-    database="pr_mmbuzz_2022_06"
-    mydb = mysql.connector.connect(host=host,user=user,password="",database=database)
-    mycursor = mydb.cursor()
-    # ----------------------------------------------------------  
-    query = ' SELECT  '
-    query += ' leagueapi_id '  
-    query += ' , season '  
-    query += " , teams_home " 
-    query += " , teams_away " 
-    query += ' , date '   
-    query += 'FROM football_fixtures' 
-    query += " WHERE leagueapi_id = '"+str(leagueapi_id)+"' "
-    query += " and season = '"+str(season)+"' "
-    query += " and fixture_status in ('Match Finished', 'Match Finished Ended') "   
-    query += " and shots_on_goal_home is null "
-    query += " and shots_on_goal_away is null "
-    # ----------------------------------------------------------   
-    print(space + query)
-    # ----------------------------------------------------------   
-    mycursor = mydb.cursor()
-    mycursor.execute(query)
-    result =  mycursor.fetchall()
-    # ---------------------------------------------------------- 
-    total_rows = len(result)
-    print(space + "Total Row(s) : " + str(total_rows), flush=True) 
-    # ---------------------------------------------------------- 
-    counter = 0
-    # ----------------------------------------------------------   
-    for x in result:    
-        # ------------------------------------------------------
-        counter        += 1
-        leagueapi_id   = str(x[0])  
-        season         = str(x[1])  
-
-        teams_home         = str(x[2])  
-        teams_away         = str(x[3])  
-
-        date         = str(x[4])  
-        # ------------------------------------------------------
-        word = space + "[" + str(counter) + "/" +str(total_rows) + "] " 
-        word += "#" + leagueapi_id 
-        word += " - " + season
-        word += " - " + teams_home
-        word += " vs " + teams_away
-        print(word, flush=True)    
-    # ----------------------------------------------------------     
-    continue_ = input(space + "Are you sure want to continue? :  ")
-    # ----------------------------------------------------------   
-    counter = 0
-    # ----------------------------------------------------------  
-    if(total_rows > 0 and continue_ == 'yes'):   
-        # ------------------------------------------------------  
-        for x in result:    
-            # --------------------------------------------------
-            counter        += 1
-            leagueapi_id   = str(x[0])  
-            season         = str(x[1])  
-
-            teams_home         = str(x[2])  
-            teams_away         = str(x[3])  
-
-            date         = str(x[4])  
-            # ------------------------------------------------------
-            word = space + "[" + str(counter) + "/" +str(total_rows) + "] " 
-            word += "#" + leagueapi_id 
-            word += " - " + season
-            word += " - " + teams_home
-            word += " vs " + teams_away
-            print(word, flush=True)    
-            # --------------------------------------------------- 
-    # ---------------------------------------------------------- 
-    # ----------------------------------------------------------   
         
-def ff_get_fixture_that_not_update_stats_with_team(teamapi_id, leagueapi_id, season, space):
-    # ----------------------------------------------------------   
-    space += "__"
-    # ---------------------------------------------------------- 
-    print(space + "ff_get_fixture_that_not_update_stats_with_team()", flush=True)
-    # ----------------------------------------------------------  
-    host="localhost"
-    user="root" 
-    database="pr_mmbuzz_2022_06"
-    mydb = mysql.connector.connect(host=host,user=user,password="",database=database)
-    mycursor = mydb.cursor()
-    # ----------------------------------------------------------  
-    query1 = ' SELECT  '
-    query1 += ' leagueapi_id '  
-    query1 += ' , season '  
-    query1 += " , teams_home " 
-    query1 += " , teams_away " 
-    query1 += ' , date '   
-    query1 += 'FROM football_fixtures' 
-    query1 += " WHERE leagueapi_id = '"+str(leagueapi_id)+"' "
-    query1 += " and season = '"+str(season)+"' "
-    query1 += " and teams_home_id = '"+str(teamapi_id)+"' "
-    query1 += " and fixture_status in ('Match Finished', 'Match Finished Ended') "   
-    query1 += " and shots_on_goal_home is null "
-    query1 += " and shots_on_goal_away is null "
+# def ff_get_fixture_that_not_update_stats_with_team(teamapi_id, leagueapi_id, season, space):
+#     # ----------------------------------------------------------   
+#     space += "__"
+#     # ---------------------------------------------------------- 
+#     print(space + "ff_get_fixture_that_not_update_stats_with_team()", flush=True)
+#     # ----------------------------------------------------------  
+#     host="localhost"
+#     user="root" 
+#     database="pr_mmbuzz_2022_06"
+#     mydb = mysql.connector.connect(host=host,user=user,password="",database=database)
+#     mycursor = mydb.cursor()
+#     # ----------------------------------------------------------  
+#     query1 = ' SELECT  '
+#     query1 += ' leagueapi_id '  
+#     query1 += ' , season '  
+#     query1 += " , teams_home " 
+#     query1 += " , teams_away " 
+#     query1 += ' , date '   
+#     query1 += 'FROM football_odds' 
+#     query1 += " WHERE leagueapi_id = '"+str(leagueapi_id)+"' "
+#     query1 += " and season = '"+str(season)+"' "
+#     query1 += " and teams_home_id = '"+str(teamapi_id)+"' "
+#     query1 += " and fixture_status in ('Match Finished', 'Match Finished Ended') "   
+#     query1 += " and shots_on_goal_home is null "
+#     query1 += " and shots_on_goal_away is null "
 
     
-    query2 = ' SELECT  '
-    query2 += ' leagueapi_id '  
-    query2 += ' , season '  
-    query2 += " , teams_home " 
-    query2 += " , teams_away " 
-    query2 += ' , date '   
-    query2 += 'FROM football_fixtures' 
-    query2 += " WHERE leagueapi_id = '"+str(leagueapi_id)+"' "
-    query2 += " and season = '"+str(season)+"' "
-    query2 += " and teams_away_id = '"+str(teamapi_id)+"' "
-    query2 += " and fixture_status in ('Match Finished', 'Match Finished Ended') "   
-    query2 += " and shots_on_goal_home is null "
-    query2 += " and shots_on_goal_away is null "
+#     query2 = ' SELECT  '
+#     query2 += ' leagueapi_id '  
+#     query2 += ' , season '  
+#     query2 += " , teams_home " 
+#     query2 += " , teams_away " 
+#     query2 += ' , date '   
+#     query2 += 'FROM football_odds' 
+#     query2 += " WHERE leagueapi_id = '"+str(leagueapi_id)+"' "
+#     query2 += " and season = '"+str(season)+"' "
+#     query2 += " and teams_away_id = '"+str(teamapi_id)+"' "
+#     query2 += " and fixture_status in ('Match Finished', 'Match Finished Ended') "   
+#     query2 += " and shots_on_goal_home is null "
+#     query2 += " and shots_on_goal_away is null "
 
-    query = "(" + query1 + ") union (" + query2 + ") order by date asc"
+#     query = "(" + query1 + ") union (" + query2 + ") order by date asc"
 
 
-    # ----------------------------------------------------------   
-    print(space + query)
-    # ----------------------------------------------------------   
-    mycursor = mydb.cursor()
-    mycursor.execute(query)
-    result =  mycursor.fetchall()
-    # ---------------------------------------------------------- 
-    total_rows = len(result)
-    print(space + "Total Row(s) : " + str(total_rows), flush=True) 
-    # ---------------------------------------------------------- 
-    counter = 0
-    # ----------------------------------------------------------   
-    for x in result:    
-        # ------------------------------------------------------
-        counter        += 1
-        leagueapi_id   = str(x[0])  
-        season         = str(x[1])  
+#     # ----------------------------------------------------------   
+#     print(space + query)
+#     # ----------------------------------------------------------   
+#     mycursor = mydb.cursor()
+#     mycursor.execute(query)
+#     result =  mycursor.fetchall()
+#     # ---------------------------------------------------------- 
+#     total_rows = len(result)
+#     print(space + "Total Row(s) : " + str(total_rows), flush=True) 
+    # # close the cursor and database connection
+    # mycursor.close()
+    # mydb.close()
+#     # ---------------------------------------------------------- 
+#     counter = 0
+#     # ----------------------------------------------------------   
+#     for x in result:    
+#         # ------------------------------------------------------
+#         counter        += 1
+#         leagueapi_id   = str(x[0])  
+#         season         = str(x[1])  
 
-        teams_home         = str(x[2])  
-        teams_away         = str(x[3])  
+#         teams_home         = str(x[2])  
+#         teams_away         = str(x[3])  
 
-        date         = str(x[4])  
-        # ------------------------------------------------------
-        word = space + "[" + str(counter) + "/" +str(total_rows) + "] " 
-        word += "#" + leagueapi_id 
-        word += " - " + season
-        word += " - " + teams_home
-        word += " vs " + teams_away
-        print(word, flush=True)    
-    # ----------------------------------------------------------     
-    continue_ = input(space + "Are you sure want to continue? :  ")
-    # ----------------------------------------------------------   
-    counter = 0
-    # ----------------------------------------------------------  
-    if(total_rows > 0 and continue_ == 'yes'):   
-        # ------------------------------------------------------  
-        for x in result:    
-            # --------------------------------------------------
-            counter        += 1
-            leagueapi_id   = str(x[0])  
-            season         = str(x[1])  
+#         date         = str(x[4])  
+#         # ------------------------------------------------------
+#         word = space + "[" + str(counter) + "/" +str(total_rows) + "] " 
+#         word += "#" + leagueapi_id 
+#         word += " - " + season
+#         word += " - " + teams_home
+#         word += " vs " + teams_away
+#         print(word, flush=True)    
+#     # ----------------------------------------------------------     
+#     continue_ = input(space + "Are you sure want to continue? :  ")
+#     # ----------------------------------------------------------   
+#     counter = 0
+#     # ----------------------------------------------------------  
+#     if(total_rows > 0 and continue_ == 'yes'):   
+#         # ------------------------------------------------------  
+#         for x in result:    
+#             # --------------------------------------------------
+#             counter        += 1
+#             leagueapi_id   = str(x[0])  
+#             season         = str(x[1])  
 
-            teams_home         = str(x[2])  
-            teams_away         = str(x[3])  
+#             teams_home         = str(x[2])  
+#             teams_away         = str(x[3])  
 
-            date         = str(x[4])  
-            # ------------------------------------------------------
-            word = space + "[" + str(counter) + "/" +str(total_rows) + "] " 
-            word += "#" + leagueapi_id 
-            word += " - " + season
-            word += " - " + teams_home
-            word += " vs " + teams_away
-            print(word, flush=True)    
-            # --------------------------------------------------- 
+#             date         = str(x[4])  
+#             # ------------------------------------------------------
+#             word = space + "[" + str(counter) + "/" +str(total_rows) + "] " 
+#             word += "#" + leagueapi_id 
+#             word += " - " + season
+#             word += " - " + teams_home
+#             word += " vs " + teams_away
+#             print(word, flush=True)    
+#             # --------------------------------------------------- 
+

@@ -71,9 +71,7 @@ def pl_check_patternlist(leagueapi_id, league_country,
         print(space + "__insert commited")
     if(total_rows != 0): 
         print(space + "__Already Data")
-    # ----------------------------------------------------------     
-    # ----------------------------------------------------------     
-    # ----------------------------------------------------------        
+    # ----------------------------------------------------------         
     
 
 def pl_updating_all_leagues_to_patternlist():
@@ -89,7 +87,7 @@ def pl_updating_all_leagues_to_patternlist():
     query += " group by leagueapi_id " 
     # ----------------------------------------------------------   
     query_1 = " select leagueapi_id "  
-    query_1 += " from football_fixtures " 
+    query_1 += " from football_fixturesx " 
     query_1 += " where leagueapi_id not in ('"+query+"') "
     query_1 += " group by leagueapi_id " 
     # ----------------------------------------------------------  
@@ -117,14 +115,14 @@ def pl_country_for_patternlists(yesterday_ago, space):
     # ---------------------------------------------------------- 
     # OLD QUERY  
     # query = " Select league_country "   
-    # query += " FROM `football_fixtures` "   
+    # query += " FROM `football_fixturesx` "   
     # query += " WHERE fixture_status IN ('Match Finished', 'Match Finished Ended') " 
     # query += " AND DATE(date) <= '"+str(yesterday_ago)+"' "  
     # query += " GROUP BY league_country "  
 
      
     query = " Select leagueapi_id "   
-    query += " FROM `football_fixtures` "   
+    query += " FROM `football_fixturesx` "   
     query += " WHERE fixture_status IN ('Match Finished', 'Match Finished Ended') " 
     query += " AND DATE(date) <= '"+str(yesterday_ago)+"' "  
     query += " GROUP BY leagueapi_id "  
@@ -210,7 +208,7 @@ def pl_predates_get_advice(fixtureapi_id, mirror, status, space):
     query += " pre_gou_pattern, "
     query += " leagueapi_id, "
     query += " id "
-    query += " from football_fixtures "  
+    query += " from football_fixturesx "  
     query += " where fixtureapi_id = '"+str(fixtureapi_id)+"' "  
     # ----------------------------------------------------------    
     mycursor = mydb.cursor()
@@ -2316,7 +2314,7 @@ def pl_get_leagueapi_for_advice(pre_ah_pattern, pre_gou_pattern, end_ah_pattern,
     # print(space + "   " + advices)
     if(advices != ""):
         star = '<i class="fas fa-star text-yellow"></i>'
-        update  = "UPDATE `football_fixtures` "
+        update  = "UPDATE `football_fixturesx` "
 
         if(mirror == "yes"):
             if(status == 'pre'):
@@ -2334,7 +2332,7 @@ def pl_get_leagueapi_for_advice(pre_ah_pattern, pre_gou_pattern, end_ah_pattern,
         star = '<i class="fas fa-star text-yellow"></i>'
         update += "  `star` = '"+str(star)+"' " 
     elif(advices == ""):
-        update  = "UPDATE `football_fixtures` "
+        update  = "UPDATE `football_fixturesx` "
         if(mirror == "yes"):
             if(status == 'pre'):
                 update += "SET `pre_advices_mirror` = Null "
@@ -2414,7 +2412,7 @@ def pl_get_leagueapi_for_other_pattern(idx, leagueapi_id, pre_ah_pattern, pre_go
     # ----------------------------------------------------------  
     if(count_total > 1): 
         star = '<i class="fas fa-star text-yellow"></i>'
-        update  = "UPDATE `football_fixtures` "
+        update  = "UPDATE `football_fixturesx` "
         update += " SET `star` = '"+str(star)+"', "
         update += "  `other_pattern` = '"+str(count_total)+"' "
         update += " WHERE `id` = "+str(idx)+" "
