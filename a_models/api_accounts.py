@@ -37,6 +37,9 @@ def aa_check_acccount(requested, space):
         mycursor.execute(query_update_to_nil)
         mydb.commit()   
         # ------------------------------------------------------  
+        mycursor.close()
+        mydb.close()  
+        # ------------------------------------------------------  
         host="localhost"
         user="root" 
         database="pr_mmbuzz_2022_06"
@@ -65,6 +68,9 @@ def aa_check_acccount(requested, space):
         query_update_to_one = "UPDATE `apiaccounts` SET  `active` = 1 where `id` = " + str(x1_id)
         mycursor.execute(query_update_to_one)
         mydb.commit()   
+        # ------------------------------------------------------ 
+        mycursor.close()
+        mydb.close()  
         # ------------------------------------------------------  
     # ----------------------------------------------------------   
     space += "__"
@@ -98,6 +104,9 @@ def aa_update_counter(space):
     # ----------------------------------------------------------
     mycursor.execute(query)
     mydb.commit()    
+    # ----------------------------------------------------------
+    mycursor.close()
+    mydb.close()  
     # ----------------------------------------------------------   
     space += "__"
     # ----------------------------------------------------------

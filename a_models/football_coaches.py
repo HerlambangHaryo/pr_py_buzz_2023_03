@@ -57,6 +57,8 @@ def fC_insert_new(coacheapi_id, name, image, space):
             print(space + "football_coaches INSERTED", flush=True)
             mycursor.execute(query_commit)
             mydb.commit()   
+            mycursor.close()
+            mydb.close()  
     # ----------------------------------------------------------  
     # ----------------------------------------------------------  
     # ----------------------------------------------------------  

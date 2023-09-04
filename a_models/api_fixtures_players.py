@@ -1,467 +1,493 @@
 # Import
 import mysql.connector 
-from a_models.api_accounts import *      
-from a_models.api_football_standings import *     
-from a_models.api_teams_statistics import *   
-from a_models.football_players import *   
-from a_models.api_football_player_statistics import *  
+from a_models.api_accounts import *   
+from a_settings.messages import *    
 
 import pytz
 utc=pytz.UTC 
 
 import requests
 import json 
-  
 
-def aFp_controll_match_update(DICT, PREP_, space):
+import time
+ 
+def afP_controll_match_update(DICT, ROUTES, space):
     # ----------------------------------------------------------   
-    # ao_controll_match_update(DICT, PREP_, space)
-    # ao_controll_match_update(date, bookmaker, season, league, 1, space)
     space += "__"
     # ---------------------------------------------------------- 
-    print(space + "aFp_controll_match_update()", flush=True)
+    print(space + "afP_controll_match_update()", flush=True)
     # ----------------------------------------------------------    
     APIkey = aa_check_acccount('APIkey', space)    
     counterAPI = aa_check_acccount('counterAPI', space) 
     # ----------------------------------------------------------
-    if(counterAPI <= 0): 
-        word = "# ------------- API COUNTER EMPTY ------------- #"
-        print(word, flush=True)   
+    if(counterAPI <= 0):
+        its_api_empty()
     elif(counterAPI > 0):
         aa_update_counter(space) 
-        # ao_response_odds(APIkey, date, bookmaker, season, league, page, space)
-        aFp_response_odds(APIkey, DICT, PREP_, space)
+        afP_response_fixtures(DICT, ROUTES, APIkey, space)
     # ----------------------------------------------------------
  
-def aFp_response_odds(APIkey, DICT, PREP_, space): 
-    # ao_response_odds(APIkey, date, bookmaker, season, league, page, space)
-    # ----------------------------------------------------------   
+def afP_response_fixtures(DICT, ROUTES, APIkey, space): 
+    # ----------------------------------------------------------  
     space += "__"
-    # ----------------------------------------------------------
-    print(space + "aFp_response_odds()", flush=True) 
-    # ----------------------------------------------------------   
-    space += "__"
-    # ----------------------------------------------------------
-    DICTfixture = DICT['fixtureapi_id']  
-    DICTleagueapi_id = DICT['leagueapi_id']  
-    DICTseason = DICT['season']  
-    # ----------------------------------------------------------
-    print(space + "DICTfixture : " + str(DICTfixture), flush=True)  
-    print(space + "DICTleagueapi_id : " + str(DICTleagueapi_id), flush=True)  
-    print(space + "DICTseason : " + str(DICTseason), flush=True)  
-    # ----------------------------------------------------------
-    host="localhost"
-    user="root" 
-    database="pr_mmbuzz_2022_06"
-    mydb = mysql.connector.connect(host=host,user=user,password="",database=database)
-    mycursor = mydb.cursor()
+    # ---------------------------------------------------------- 
+    print(space + "afP_response_fixtures()", flush=True) 
     # ----------------------------------------------------------
     from datetime import datetime
-    local = pytz.timezone("Asia/Jakarta") 
-    url = "https://api-football-v1.p.rapidapi.com/v3/fixtures/players"
-    # ----------------------------------------------------------
-    querystring = {"fixture":DICTfixture }
+    local = pytz.timezone("Asia/Jakarta")
+    url = "https://api-football-v1.p.rapidapi.com/v3/fixtures/players" 
+    # ---------------------------------------------------------- 
+    space += "__"
+    # ---------------------------------------------------------- 
+    # ---------------------------------------------------------- 
     # ----------------------------------------------------------  
+    DICTfixtureapi_id = DICT['fixtureapi_id']
+    print(space + "fixtureapi_id : " + str(DICTfixtureapi_id), flush=True)  
+    # ----------------------------------------------------------   
+    xROUTES = ROUTES
+    print(space + "ROUTES : " + xROUTES, flush=True) 
+    # ---------------------------------------------------------- 
+    querystring = {"fixture":DICTfixtureapi_id} 
+    # ---------------------------------------------------------- 
     headers = {
         "X-RapidAPI-Key": APIkey,
         "X-RapidAPI-Host": "api-football-v1.p.rapidapi.com"
     }
     # ----------------------------------------------------------
-    response = requests.get(url, headers=headers, params=querystring) 
-    d = json.loads(response.text) 
-    # ----------------------------------------------------------  
-    print(space + "__________________________________________________________________________", flush=True)
-    # ----------------------------------------------------------  
-    try:  
-        total_response = len(d['response'])
-        print(space + "Total API Response(s) : " + str(total_response), flush=True) 
-        # ---------------------------------------------------------- 
-        counter_response = 0
-        # ----------------------------------------------------------   
-        space += "__"
-        # ----------------------------------------------------------  
-        if(total_response == 0):
-            aa ="oke"
-        elif(total_response > 0):
-            # ------------------------------------------------------ 
-            data = d['response']
+    response = requests.request("GET", url, headers=headers, params=querystring)
+    d = json.loads(response.text)
+    # ----------------------------------------------------------    
+    space += "__"
+    # ----------------------------------------------------------   
+    print(space + "Total API Response(s) : " + str(len(d['response'])), flush=True) 
+    # ---------------------------------------------------------- 
+    counter_response = 0
+    total_rows = len(d['response'])
+    # ---------------------------------------------------------- 
+    space += "__"
+    counter = 0
+    # ---------------------------------------------------------- 
+    if(len(d['response']) != 0):
+        # ------------------------------------------------------
+        for row in d['response']:
+            # -------------------------------------------------- 
+            teamapi_id = row['team']['id']  
+            # print(team_id, flush=True)
+            # --------------------------------------------------
+            team_name = row['team']['name']  
+            # print(team_name, flush=True)
+            # --------------------------------------------------
+            # --------------------------------------------------
+            array_players = row['players']
+            # --------------------------------------------------
+            for ply in array_players:
+                # ----------------------------------------------
+                # print(ply)
+                # ----------------------------------------------
+                playerapi_id = ply['player']['id']  
+                # print("player_id: " + str(player_id), flush=True)
+                # ----------------------------------------------
+                player_name = ply['player']['name']  
+                # print("player_name: " + str(player_name), flush=True)
+                # ----------------------------------------------
+                player_photo = ply['player']['photo']  
+                # print("player_photo: " + str(player_photo), flush=True)
+                # ----------------------------------------------  
+                # print("", flush=True) 
+                # ----------------------------------------------
+                games_minutes = ply['statistics'][0]['games']['minutes']
+                if(games_minutes is None):
+                    games_minutes = 0
+                # print("games_minutes: " + str(games_minutes), flush=True)
+                # ----------------------------------------------
+                games_number = ply['statistics'][0]['games']['number']
+                if(games_number is None):
+                    games_number = 0
+                # print("games_number: " + str(games_number), flush=True)
+                # ----------------------------------------------
+                games_position = ply['statistics'][0]['games']['position']
+                if(games_position is None):
+                    games_position = 0
+                # print("games_position: " + str(games_position), flush=True)
+                # ----------------------------------------------
+                games_rating = ply['statistics'][0]['games']['rating']
+                if(games_rating is None):
+                    games_rating = 0
+                # print("games_rating: " + str(games_rating), flush=True)
+                # ----------------------------------------------
+                games_captain = ply['statistics'][0]['games']['captain']
+                if(games_captain is True):
+                    games_captain = 1
+                elif(games_captain is False):
+                    games_captain = 0
+                # print("games_captain: " + str(games_captain), flush=True)
+                # ----------------------------------------------
+                games_substitute = ply['statistics'][0]['games']['substitute']
+                if(games_substitute is True):
+                    games_substitute = 1
+                elif(games_substitute is False):
+                    games_substitute = 0
+                # print("games_substitute: " + str(games_substitute), flush=True)
 
-            counter = 0
-            # Iterate through each team in the data
-            for team_data in data:
-                # Get the team name
-                team_id = team_data['team']['id']
-                team_name = team_data['team']['name']
-                # print("Team Name: " + team_name)
+
+                # print("", flush=True) 
+                # ----------------------------------------------
+                offsides = ply['statistics'][0]['offsides']
+                if(offsides is None):
+                    offsides = 0
+                # print("offsides: " + str(offsides), flush=True)
                 
-                counter2 = 0
-                players_list = team_data['players']
+        
+                # print("", flush=True) 
+                # ----------------------------------------------
+                shots_total = ply['statistics'][0]['shots']['total']
+                if(shots_total is None):
+                    shots_total = 0
+                # print("shots_total: " + str(shots_total), flush=True)
+                # ----------------------------------------------
+                shots_on = ply['statistics'][0]['shots']['on']
+                if(shots_on is None):
+                    shots_on = 0
+                # print("shots_on: " + str(shots_on), flush=True)
+
+
+                # print("", flush=True) 
+                # ----------------------------------------------
+                goals_total = ply['statistics'][0]['goals']['total']
+                if(goals_total is None):
+                    goals_total = 0
+                # print("goals_total: " + str(shots_total), flush=True)
+                # ----------------------------------------------
+                goals_conceded = ply['statistics'][0]['goals']['conceded']
+                if(goals_conceded is None):
+                    goals_conceded = 0
+                # print("goals_conceded: " + str(goals_conceded), flush=True)
+                # ----------------------------------------------
+                goals_assists = ply['statistics'][0]['goals']['assists']
+                if(goals_assists is None):
+                    goals_assists = 0
+                # print("goals_assists: " + str(goals_assists), flush=True)
+                # ----------------------------------------------
+                goals_saves = ply['statistics'][0]['goals']['saves']
+                if(goals_saves is None):
+                    goals_saves = 0
+                # print("goals_saves: " + str(goals_saves), flush=True)
+
+
+                # print("", flush=True) 
+                # ----------------------------------------------
+                passes_total = ply['statistics'][0]['passes']['total']
+                if(passes_total is None):
+                    passes_total = 0
+                # print("passes_total: " + str(passes_total), flush=True)
+                # ----------------------------------------------
+                passes_key = ply['statistics'][0]['passes']['key']
+                if(passes_key is None):
+                    passes_key = 0
+                # print("passes_key: " + str(passes_key), flush=True)
+                # ----------------------------------------------
+                passes_accuracy = ply['statistics'][0]['passes']['accuracy']
+                if(passes_accuracy is None):
+                    passes_accuracy = 0
+                # print("passes_accuracy: " + str(passes_accuracy), flush=True)
+
+
+                # print("", flush=True) 
+                # ----------------------------------------------
+                tackles_total = ply['statistics'][0]['tackles']['total']
+                if(tackles_total is None):
+                    tackles_total = 0
+                # print("tackles_total: " + str(tackles_total), flush=True)
+                # ----------------------------------------------
+                tackles_blocks = ply['statistics'][0]['tackles']['blocks']
+                if(tackles_blocks is None):
+                    tackles_blocks = 0
+                # print("tackles_blocks: " + str(tackles_blocks), flush=True)
+                # ----------------------------------------------
+                tackles_interceptions = ply['statistics'][0]['tackles']['interceptions']
+                if(tackles_interceptions is None):
+                    tackles_interceptions = 0
+                # print("tackles_interceptions: " + str(tackles_interceptions), flush=True)
+
+
+                # print("", flush=True) 
+                # ----------------------------------------------
+                duels_total = ply['statistics'][0]['duels']['total']
+                if(duels_total is None):
+                    duels_total = 0
+                # print("duels_total: " + str(duels_total), flush=True)
+                # ----------------------------------------------
+                duels_won = ply['statistics'][0]['duels']['won']
+                if(duels_won is None):
+                    duels_won = 0
+                # print("duels_won: " + str(duels_won), flush=True)
+
+
+                # print("", flush=True) 
+                # ----------------------------------------------
+                dribbles_attempts = ply['statistics'][0]['dribbles']['attempts']
+                if(dribbles_attempts is None):
+                    dribbles_attempts = 0
+                # print("dribbles_attempts: " + str(dribbles_attempts), flush=True)
+                # ----------------------------------------------
+                dribbles_success = ply['statistics'][0]['dribbles']['success']
+                if(dribbles_success is None):
+                    dribbles_success = 0
+                # print("dribbles_success: " + str(dribbles_success), flush=True)
+                # ----------------------------------------------
+                dribbles_past = ply['statistics'][0]['dribbles']['past']
+                if(dribbles_past is None):
+                    dribbles_past = 0
+                # print("dribbles_past: " + str(dribbles_past), flush=True)
+
+
+                # print("", flush=True) 
+                # ----------------------------------------------
+                fouls_drawn = ply['statistics'][0]['fouls']['drawn']
+                if(fouls_drawn is None):
+                    fouls_drawn = 0
+                # print("fouls_drawn: " + str(fouls_drawn), flush=True)
+                # ----------------------------------------------
+                fouls_committed = ply['statistics'][0]['fouls']['committed']
+                if(fouls_committed is None):
+                    fouls_committed = 0
+                # print("fouls_committed: " + str(fouls_committed), flush=True)
+
+
+                # print("", flush=True) 
+                # ----------------------------------------------
+                cards_yellow = ply['statistics'][0]['cards']['yellow']
+                if(cards_yellow is None):
+                    cards_yellow = 0
+                # print("cards_yellow: " + str(cards_yellow), flush=True)
+                # ----------------------------------------------
+                cards_red = ply['statistics'][0]['cards']['red']
+                if(cards_red is None):
+                    cards_red = 0
+                # print("cards_red: " + str(cards_red), flush=True)
+
+
+                # print("", flush=True) 
+                # ----------------------------------------------
+                penalty_won = ply['statistics'][0]['penalty']['won']
+                if(penalty_won is None):
+                    penalty_won = 0
+                # print("penalty_won: " + str(penalty_won), flush=True)
+                # ----------------------------------------------
+                penalty_commited = ply['statistics'][0]['penalty']['commited']
+                if(penalty_commited is None):
+                    penalty_commited = 0
+                # print("penalty_commited: " + str(penalty_commited), flush=True)
+                # ----------------------------------------------
+                penalty_scored = ply['statistics'][0]['penalty']['scored']
+                if(penalty_scored is None):
+                    penalty_scored = 0
+                # print("penalty_scored: " + str(penalty_scored), flush=True)
+                # ----------------------------------------------
+                penalty_missed = ply['statistics'][0]['penalty']['missed']
+                if(penalty_missed is None):
+                    penalty_missed = 0
+                # print("penalty_missed: " + str(penalty_missed), flush=True)
+                # ----------------------------------------------
+                penalty_saved = ply['statistics'][0]['penalty']['saved']
+                if(penalty_saved is None):
+                    penalty_saved = 0
+                # print("penalty_saved: " + str(penalty_saved), flush=True)
+
+ 
+
+                # ----------------------------------------------------------  
+                host="localhost"
+                user="root" 
+                database="pr_mmbuzz_2022_06"
+                mydb = mysql.connector.connect(host=host,user=user,password="",database=database)
+                mycursor = mydb.cursor()
+                # ----------------------------------------------------------  
+                query = "Select "
+                query += " leagueapi_id " 
+                query += " , season  " 
+                query += " , date " 
+                query += " from football_fixtures " 
+                query += " where fixtureapi_id = '"+str(DICTfixtureapi_id)+"' "   
+                # ----------------------------------------------------------   
+                print(space + query, flush=True)
+                # ----------------------------------------------------------   
+                mycursor = mydb.cursor()
+                mycursor.execute(query)
+                result =  mycursor.fetchall()
+                # ---------------------------------------------------------- 
+                total_rows = len(result)
+                print(space + "Total Row(s) : " + str(total_rows), flush=True) 
+                # ----------------------------------------------------------  
+                mycursor.close()
+                mydb.close()
+                # ---------------------------------------------------------- 
+                counter = 0
+                # ----------------------------------------------------------   
+                for x in result:    
+                    # ------------------------------------------------------
+                    counter        += 1
+                    # ------------------------------------------------------
+                    leagueapi_id   = str(x[0])  
+                    season         = str(x[1])  
+                    date        = str(x[2])    
+                    # ------------------------------------------------------
+                # ----------------------------------------------------------  
+                # ----------------------------------------------------------  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+                # ----------------------------------------------------------  
+                host="localhost"
+                user="root" 
+                database="pr_mmbuzz_2022_06"
+                mydb = mysql.connector.connect(host=host,user=user,password="",database=database)
+                mycursor = mydb.cursor()
+                # ----------------------------------------------------------   
+                query_commit = "INSERT INTO `api_football_player_analysis`( "
+                # ------------------------------------------  
+                query_commit += " `date`, " 
+                query_commit += " `leagueapi_id`, " 
+                query_commit += " `season`, " 
+                query_commit += " `teamapi_id`, " 
+                query_commit += " `playerapi_id`, " 
+                query_commit += " `fixtureapi_id`, " 
+                query_commit += " `minutes`, " 
+                query_commit += " `number`, " 
+                query_commit += " `position`, " 
+                query_commit += " `rating`, " 
+                query_commit += " `captain`, " 
+                query_commit += " `substitute`, " 
+                query_commit += " `offsides`, " 
+                query_commit += " `shots_total`, " 
+                query_commit += " `shots_on`, " 
+                query_commit += " `goals_total`, " 
+                query_commit += " `goals_conceded`, " 
+                query_commit += " `goals_assists`, " 
+                query_commit += " `goals_saves`, " 
+                query_commit += " `passes_total`, " 
+                query_commit += " `passes_key`, " 
+                query_commit += " `passes_accuracy`, " 
+                query_commit += " `tackles_total`, " 
+                query_commit += " `tackles_blocks`, " 
+                query_commit += " `tackles_interceptions`, " 
+                query_commit += " `duels_total`, " 
+                query_commit += " `duels_won`, " 
+                query_commit += " `dribbles_attempts`, " 
+                query_commit += " `dribbles_success`, " 
+                query_commit += " `dribbles_past`, " 
+                query_commit += " `fouls_drawn`, " 
+                query_commit += " `fouls_committed`, " 
+                query_commit += " `cards_yellow`, " 
+                query_commit += " `cards_red`, " 
+                query_commit += " `penalty_won`, " 
+                query_commit += " `penalty_commited`, " 
+                query_commit += " `penalty_scored`, " 
+                query_commit += " `penalty_missed`, " 
+                query_commit += " `penalty_saved`, "  
+                # ------------------------------------------------------  
+                query_commit += " `created_at` "   
+                # ------------------------------------------------------  
+                query_commit += " ) VALUES ( "
+                # ------------------------------------------------------  
+                query_commit += " '" + str(date) + "', "  
+                query_commit += " " + str(leagueapi_id) + ", "  
+                query_commit += " " + str(season) + ", "  
+                query_commit += " " + str(teamapi_id) + ", "  
+                query_commit += " " + str(playerapi_id) + ", "  
+                query_commit += " " + str(DICTfixtureapi_id) + ", "  
+                query_commit += " " + str(games_minutes) + ", "  
+                query_commit += " " + str(games_number) + ", "  
+                query_commit += " '" + str(games_position) + "', "  
+                query_commit += " " + str(games_rating) + ", "  
+                query_commit += " " + str(games_captain) + ", "  
+                query_commit += " " + str(games_substitute) + ", "  
+                query_commit += " " + str(offsides) + ", "  
+                query_commit += " " + str(shots_total) + ", "  
+                query_commit += " " + str(shots_on) + ", "  
+                query_commit += " " + str(goals_total) + ", "  
+                query_commit += " " + str(goals_conceded) + ", "  
+                query_commit += " " + str(goals_assists) + ", "  
+                query_commit += " " + str(goals_saves) + ", "  
+                query_commit += " " + str(passes_total) + ", "  
+                query_commit += " " + str(passes_key) + ", "  
+                query_commit += " " + str(passes_accuracy) + ", "  
+                query_commit += " " + str(tackles_total) + ", "  
+                query_commit += " " + str(tackles_blocks) + ", "  
+                query_commit += " " + str(tackles_interceptions) + ", "  
+                query_commit += " " + str(duels_total) + ", "  
+                query_commit += " " + str(duels_won) + ", "  
+                query_commit += " " + str(dribbles_attempts) + ", "  
+                query_commit += " " + str(dribbles_success) + ", "  
+                query_commit += " " + str(dribbles_past) + ", "  
+                query_commit += " " + str(fouls_drawn) + ", "  
+                query_commit += " " + str(fouls_committed) + ", "  
+                query_commit += " " + str(cards_yellow) + ", "  
+                query_commit += " " + str(cards_red) + ", "  
+                query_commit += " " + str(penalty_won) + ", "  
+                query_commit += " " + str(penalty_commited) + ", "  
+                query_commit += " " + str(penalty_scored) + ", "  
+                query_commit += " " + str(penalty_missed) + ", "  
+                query_commit += " " + str(penalty_saved) + ", "    
+                query_commit += " current_timestamp ) "      
+                # ----------------------------------------------------------   
+                print(space + query_commit, flush=True)  
+                # ----------------------------------------------------------   
+                # ----------------------------------------------------------  
+                mycursor.execute(query_commit)
+                mydb.commit()   
+                # ----------------------------------------------------------  
+                mycursor.close()
+                mydb.close()  
+                # ----------------------------------------------------------  
+
+
+
+                # ----------------------------------------------------------  
+                host="localhost"
+                user="root" 
+                database="pr_mmbuzz_2022_06"
+                mydb = mysql.connector.connect(host=host,user=user,password="",database=database)
+                mycursor = mydb.cursor()
+                # ----------------------------------------------------------   
+                # ------------------------------------------------------
+                query_commit = "UPDATE `football_fixtures` SET "
+                # ------------------------------------------------------   
+                query_commit += " api_fixtures_players_updated_at = now(), "
+                # ------------------------------------------------------
+                query_commit += " `updated_at` = now() "
+                # ------------------------------------------------------
+                query_commit += " where fixtureapi_id = "+str(DICTfixtureapi_id)+" "    
+                query_commit += " and leagueapi_id = "+str(leagueapi_id)+" "    
+                query_commit += " and season = "+str(season)+" "    
+                # ------------------------------------------------------ 
+                # ----------------------------------------------------------   
+                print(space + query_commit, flush=True)  
+                # ----------------------------------------------------------   
+                # ----------------------------------------------------------  
+                mycursor.execute(query_commit)
+                mydb.commit()   
+                # ----------------------------------------------------------  
+                mycursor.close()
+                mydb.close()  
+                # ----------------------------------------------------------  
+
                 
-                for pl in players_list: 
-                    
-                    response_player = team_data['players'][counter2]['player'] 
-                    #  
-                    player_id = response_player['id']
-                    # print("  player_id: " + str(player_id))    
-                    #  
-                    player_name = response_player['name']
-                    # print("  player_name: " + str(player_name))    
-                    #  
-                    player_photo = response_player['photo']
-                    # print("  player_photo: " + str(player_photo))
-                    
-                    # print("") 
-                    response_games = team_data['players'][counter2]['statistics'][counter]['games']
-                    #  
-                    player_games_minutes = response_games['minutes']
-                    # print("    player_games_minutes: " + str(player_games_minutes))
-                    #  
-                    player_games_number = response_games['number']
-                    # print("    player_games_number: " + str(player_games_number))
-                    #  
-                    player_games_position = response_games['position']
-                    # print("    player_games_position: " + str(player_games_position))
-                    #  
-                    player_games_rating = response_games['rating']
-                    # print("    player_games_rating: " + str(player_games_rating))
-                    #  
-                    player_games_captain = response_games['captain']
-                    # print("    player_games_captain: " + str(player_games_captain))
-                    #  
-                    player_games_substitute = response_games['substitute']
-                    # print("    player_games_substitute: " + str(player_games_substitute))
-                    
-                    #  
-                    player_offsides = team_data['players'][counter2]['statistics'][counter]['offsides']
-                    # print("    player_offsides: " + str(player_offsides))
-                    
-                    
-                    # print("")
-                    response_shots = team_data['players'][counter2]['statistics'][counter]['shots']
-                    #  
-                    player_shots_total = response_shots['total']
-                    # print("    player_shots_total: " + str(player_shots_total))
-                    #  
-                    player_shots_on = response_shots['on']
-                    # print("    player_shots_on: " + str(player_shots_on))
-                    
-                    
-                    # print("")
-                    response_goals = team_data['players'][counter2]['statistics'][counter]['goals']
-                    #  
-                    player_goals_total = response_goals['total']
-                    # print("    player_goals_total: " + str(player_goals_total))
-                    #  
-                    player_goals_conceded = response_goals['conceded']
-                    # print("    player_goals_conceded: " + str(player_goals_conceded))
-                    #  
-                    player_goals_assists = response_goals['assists']
-                    # print("    player_goals_assists: " + str(player_goals_assists))
-                    #  
-                    player_goals_saves = response_goals['saves']
-                    # print("    player_goals_saves: " + str(player_goals_saves))
-                    
-                    
-                    
-                    # print("")
-                    response_passes = team_data['players'][counter2]['statistics'][counter]['passes']
-                    #  
-                    player_passes_total = response_passes['total']
-                    # print("    player_passes_total: " + str(player_passes_total))
-                    #  
-                    player_passes_key = response_passes['key']
-                    # print("    player_passes_key: " + str(player_passes_key))
-                    #  
-                    player_passes_accuracy = response_passes['accuracy']
-                    # print("    player_passes_accuracy: " + str(player_passes_accuracy))
-                    
-                    
-                    # print("")
-                    response_tackles = team_data['players'][counter2]['statistics'][counter]['tackles']
-                    #  
-                    player_tackles_total = response_tackles['total']
-                    # print("    player_tackles_total: " + str(player_tackles_total))
-                    #  
-                    player_tackles_blocks = response_tackles['blocks']
-                    # print("    player_tackles_blocks: " + str(player_tackles_blocks))
-                    #  
-                    player_tackles_interceptions = response_tackles['interceptions']
-                    # print("    player_tackles_interceptions: " + str(player_tackles_interceptions))
-                    
-                    
-                    
-                    # print("")
-                    response_duels = team_data['players'][counter2]['statistics'][counter]['duels']
-                    #  
-                    player_duels_total = response_duels['total']
-                    # print("    player_duels_total: " + str(player_duels_total))
-                    #  
-                    player_duels_won = response_duels['won']
-                    # print("    player_duels_won: " + str(player_duels_won))
-                    
-                    
-                    
-                    # print("")
-                    response_dribbles = team_data['players'][counter2]['statistics'][counter]['dribbles']
-                    #  
-                    player_dribbles_attempts = response_dribbles['attempts']
-                    # print("    player_dribbles_attempts: " + str(player_dribbles_attempts))
-                    #  
-                    player_dribbles_success = response_dribbles['success']
-                    # print("    player_dribbles_success: " + str(player_dribbles_success))
-                    #  
-                    player_dribbles_past = response_dribbles['past']
-                    # print("    player_dribbles_past: " + str(player_dribbles_past))
-                    
-                    
-                    # print("")
-                    response_fouls = team_data['players'][counter2]['statistics'][counter]['fouls']
-                    #  
-                    player_fouls_drawn = response_fouls['drawn']
-                    # print("    player_fouls_drawn: " + str(player_fouls_drawn))
-                    #  
-                    player_fouls_committed = response_fouls['committed']
-                    # print("    player_fouls_committed: " + str(player_fouls_committed))
-                    
-                    
-                    
-                    
-                    # print("")
-                    response_cards = team_data['players'][counter2]['statistics'][counter]['cards']
-                    #  
-                    player_cards_yellow = response_cards['yellow']
-                    # print("    player_cards_yellow: " + str(player_cards_yellow))
-                    #  
-                    player_cards_red = response_cards['red']
-                    # print("    player_cards_red: " + str(player_cards_red))
-                    
-                    
-                    
-                    # print("")
-                    response_penalty = team_data['players'][counter2]['statistics'][counter]['penalty']
-                    #  
-                    player_penalty_won = response_penalty['won']
-                    # print("    player_penalty_won: " + str(player_penalty_won))
-                    #  
-                    player_penalty_commited = response_penalty['commited']
-                    # print("    player_penalty_commited: " + str(player_penalty_commited))
-                    #  
-                    player_penalty_scored = response_penalty['scored']
-                    # print("    player_penalty_scored: " + str(player_penalty_scored))
-                    #  
-                    player_penalty_missed = response_penalty['missed']
-                    # print("    player_penalty_missed: " + str(player_penalty_missed))
-                    #  
-                    player_penalty_saved = response_penalty['saved']
-                    # print("    player_penalty_saved: " + str(player_penalty_saved))
-                    
-                     
-                    counter2 += 1   
-
-                    
-                    yes_no_check    = FP_check(player_id, space)
-                    # ----------------------------------------------------------
-                    host="localhost"
-                    user="root" 
-                    database="pr_mmbuzz_2022_06"
-                    mydb = mysql.connector.connect(host=host,user=user,password="",database=database)
-                    mycursor = mydb.cursor()
-                    # ----------------------------------------------------------
-
-                    if(yes_no_check == 1):
-                        # ---------------------------------------------- 
-                        query_commit = "UPDATE `football_players` SET "  
-                        # ----------------------------------------------  
-                        query_commit += " `name` = '"+str(player_name).replace("'", "\\'")+"', "
-                        query_commit += " `photo` = '"+str(player_photo)+"', "
-                        # ---------------------------------------------- 
-                        query_commit += " `updated_at` = now() "
-                        # ---------------------------------------------- 
-                        query_commit += " where playerapi_id = "+str(player_id)+" "    
-                        # ---------------------------------------------- 
-                        # print(space + query_commit, flush=True)
-                        print(space + "football_players UPDATED", flush=True)  
-                        # ---------------------------------------------- 
-                    elif(yes_no_check == 0):
-                        # ---------------------------------------------- 
-                        query_commit = "INSERT INTO `football_players`( "
-                        # ---------------------------------------------- 
-                        query_commit += " `playerapi_id`, "
-                        query_commit += " `name`, "
-                        query_commit += " `photo`, "
-                        query_commit += " `created_at` "
-                        # ----------------------------------------------   
-                        query_commit += " ) VALUES ( "
-                        # ----------------------------------------------   
-                        query_commit += " '" + str(player_id) + "', " 
-                        query_commit += " '" + str(player_name).replace("'", "\\'") + "', " 
-                        query_commit += " '" + str(player_photo) + "', " 
-                        query_commit += " now() ) " 
-                        # ---------------------------------------------- 
-                        # ---------------------------------------------- 
-                        # print(space + query_commit, flush=True)
-                        print(space + "football_players INSERTED", flush=True)
-                    mycursor.execute(query_commit)
-                    mydb.commit()   
-            
-             
-
-             
-                    yes_no_check    = aFPS_check(DICTleagueapi_id, DICTseason, team_id, player_id, space)
-                    # ----------------------------------------------------------
-                    host="localhost"
-                    user="root" 
-                    database="pr_mmbuzz_2022_06"
-                    mydb = mysql.connector.connect(host=host,user=user,password="",database=database)
-                    mycursor = mydb.cursor()
-                    # ----------------------------------------------------------
-
-                    if(yes_no_check == 1):
-                        # ---------------------------------------------- 
-                        query_commit = "UPDATE `api_football_player_statistics` SET "  
-                        # ----------------------------------------------  
-                        query_commit += " `minutes` = '"+str(player_games_minutes)+"', "
-                        query_commit += " `number` = '"+str(player_games_number)+"', "
-                        query_commit += " `position` = '"+str(player_games_position)+"', "
-                        query_commit += " `rating` = '"+str(player_games_rating)+"', "
-                        query_commit += " `captain` = '"+str(player_games_captain)+"', "
-                        query_commit += " `substitute` = '"+str(player_games_substitute)+"', "
-                        query_commit += " `offsides` = '"+str(player_offsides)+"', "
-                        query_commit += " `shots_total` = '"+str(player_shots_total)+"', "
-                        query_commit += " `shots_on` = '"+str(player_shots_on)+"', "
-                        query_commit += " `goals_total` = '"+str(player_goals_total)+"', "
-                        query_commit += " `goals_conceded` = '"+str(player_goals_conceded)+"', "
-                        query_commit += " `goals_assists` = '"+str(player_goals_assists)+"', "
-                        query_commit += " `goals_saves` = '"+str(player_goals_saves)+"', "
-                        query_commit += " `passes_total` = '"+str(player_passes_total)+"', "
-                        query_commit += " `passes_key` = '"+str(player_passes_key)+"', "
-                        query_commit += " `passes_accuracy` = '"+str(player_passes_accuracy)+"', "
-                        query_commit += " `tackles_total` = '"+str(player_tackles_total)+"', "
-                        query_commit += " `tackles_blocks` = '"+str(player_tackles_blocks)+"', "
-                        query_commit += " `tackles_interceptions` = '"+str(player_tackles_interceptions)+"', "
-                        query_commit += " `duels_total` = '"+str(player_duels_total)+"', "
-                        query_commit += " `duels_won` = '"+str(player_duels_won)+"', "
-                        query_commit += " `dribbles_attempts` = '"+str(player_dribbles_attempts)+"', "
-                        query_commit += " `dribbles_success` = '"+str(player_dribbles_success)+"', "
-                        query_commit += " `dribbles_past` = '"+str(player_dribbles_past)+"', "
-                        query_commit += " `fouls_drawn` = '"+str(player_fouls_drawn)+"', "
-                        query_commit += " `fouls_committed` = '"+str(player_fouls_committed)+"', "
-                        query_commit += " `cards_yellow` = '"+str(player_cards_yellow)+"', "
-                        query_commit += " `cards_red` = '"+str(player_cards_red)+"', "
-                        query_commit += " `penalty_won` = '"+str(player_penalty_won)+"', "
-                        query_commit += " `penalty_commited` = '"+str(player_penalty_commited)+"', "
-                        query_commit += " `penalty_scored` = '"+str(player_penalty_scored)+"', "
-                        query_commit += " `penalty_missed` = '"+str(player_penalty_missed)+"', "
-                        query_commit += " `penalty_saved` = '"+str(player_penalty_saved)+"', "
-                        query_commit += " `fixtureapi_id` = '"+str(DICTfixture)+"', " 
-                        # ---------------------------------------------- 
-                        query_commit += " `updated_at` = now() "
-                        # ---------------------------------------------- 
-                        # ---------------------------------------------- 
-                        query_commit += " where playerapi_id = "+str(player_id)+" "    
-                        query_commit += " and teamapi_id = "+str(team_id)+" "    
-                        query_commit += " and leagueapi_id = "+str(DICTleagueapi_id)+" "    
-                        query_commit += " and season = "+str(DICTseason)+" "      
-                        # ----------------------------------------------  
-                        # print(space + query_commit, flush=True)
-                        print(space + "api_football_player_statistics UPDATED", flush=True)  
-                        # ---------------------------------------------- 
-                    elif(yes_no_check == 0):
-                        # ---------------------------------------------- 
-                        query_commit = "INSERT INTO `api_football_player_statistics`( "
-                        # ---------------------------------------------- 
-                        query_commit += " `leagueapi_id`, "
-                        query_commit += " `season`, "
-                        query_commit += " `teamapi_id`, "
-                        query_commit += " `playerapi_id`, "
-                        query_commit += " `fixtureapi_id`, "
-
-                        
-                        query_commit += " `minutes`, "
-                        query_commit += " `number`, "
-                        query_commit += " `position`, "
-                        query_commit += " `rating`, "
-                        query_commit += " `captain`, "
-                        query_commit += " `substitute`, "
-                        query_commit += " `offsides`, "
-                        query_commit += " `shots_total`, "
-                        query_commit += " `shots_on`, "
-                        query_commit += " `goals_total`, "
-                        query_commit += " `goals_conceded`, "
-                        query_commit += " `goals_assists`, "
-                        query_commit += " `goals_saves`, "
-                        query_commit += " `passes_total`, "
-                        query_commit += " `passes_key`, "
-                        query_commit += " `passes_accuracy`, "
-                        query_commit += " `tackles_total`, "
-                        query_commit += " `tackles_blocks`, "
-                        query_commit += " `tackles_interceptions`, "
-                        query_commit += " `duels_total`, "
-                        query_commit += " `duels_won`, "
-                        query_commit += " `dribbles_attempts`, "
-                        query_commit += " `dribbles_success`, "
-                        query_commit += " `dribbles_past`, "
-                        query_commit += " `fouls_drawn`, "
-                        query_commit += " `fouls_committed`, "
-                        query_commit += " `cards_yellow`, "
-                        query_commit += " `cards_red`, "
-                        query_commit += " `penalty_won`, "
-                        query_commit += " `penalty_commited`, "
-                        query_commit += " `penalty_scored`, "
-                        query_commit += " `penalty_missed`, "
-                        query_commit += " `penalty_saved`, "
-                        # ----------------------------------------------   
-                        query_commit += " `created_at` "
-                        # ----------------------------------------------   
-                        query_commit += " ) VALUES ( "
-                        # ----------------------------------------------   
-                        query_commit += " '" + str(DICTleagueapi_id) + "', "
-                        query_commit += " '" + str(DICTseason) + "', "
-                        query_commit += " '" + str(team_id) + "', "
-                        query_commit += " '" + str(player_id) + "', "
-                        query_commit += " '" + str(DICTfixture) + "', "
-
-                        query_commit += " '" + str(player_games_minutes) + "', "
-                        query_commit += " '" + str(player_games_number) + "', "
-                        query_commit += " '" + str(player_games_position) + "', "
-                        query_commit += " '" + str(player_games_rating) + "', "
-                        query_commit += " '" + str(player_games_captain) + "', "
-                        query_commit += " '" + str(player_games_substitute) + "', "
-                        query_commit += " '" + str(player_offsides) + "', "
-                        query_commit += " '" + str(player_shots_total) + "', "
-                        query_commit += " '" + str(player_shots_on) + "', "
-                        query_commit += " '" + str(player_goals_total) + "', "
-                        query_commit += " '" + str(player_goals_conceded) + "', "
-                        query_commit += " '" + str(player_goals_assists) + "', "
-                        query_commit += " '" + str(player_goals_saves) + "', "
-                        query_commit += " '" + str(player_passes_total) + "', "
-                        query_commit += " '" + str(player_passes_key) + "', "
-                        query_commit += " '" + str(player_passes_accuracy) + "', "
-                        query_commit += " '" + str(player_tackles_total) + "', "
-                        query_commit += " '" + str(player_tackles_blocks) + "', "
-                        query_commit += " '" + str(player_tackles_interceptions) + "', "
-                        query_commit += " '" + str(player_duels_total) + "', "
-                        query_commit += " '" + str(player_duels_won) + "', "
-                        query_commit += " '" + str(player_dribbles_attempts) + "', "
-                        query_commit += " '" + str(player_dribbles_success) + "', "
-                        query_commit += " '" + str(player_dribbles_past) + "', "
-                        query_commit += " '" + str(player_fouls_drawn) + "', "
-                        query_commit += " '" + str(player_fouls_committed) + "', "
-                        query_commit += " '" + str(player_cards_yellow) + "', "
-                        query_commit += " '" + str(player_cards_red) + "', "
-                        query_commit += " '" + str(player_penalty_won) + "', "
-                        query_commit += " '" + str(player_penalty_commited) + "', "
-                        query_commit += " '" + str(player_penalty_scored) + "', "
-                        query_commit += " '" + str(player_penalty_missed) + "', "
-                        query_commit += " '" + str(player_penalty_saved) + "', "
-                        query_commit += " now() ) " 
-                        # ---------------------------------------------- 
-                        # ---------------------------------------------- 
-                        # print(space + query_commit, flush=True)
-                        print(space + "api_football_player_statistics INSERTED", flush=True)
-                    mycursor.execute(query_commit)
-                    mydb.commit()   
-            
-    # ----------------------------------------------------------  
-    except KeyError: 
-        print("KeyErrorKeyErrorKeyError")
+                time.sleep(1)
+            # -------------------------------------------------- 
+        # ------------------------------------------------------
+    # ---------------------------------------------------------- 
+    # ---------------------------------------------------------- 
+    # ---------------------------------------------------------- 

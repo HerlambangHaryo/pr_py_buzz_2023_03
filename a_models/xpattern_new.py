@@ -1,6 +1,6 @@
 # Import
 import mysql.connector 
-from a_models.patternlist import *  
+# from a_models.patternlist import *  
 
 def xpN_get_league_fixture_to_reset(leagueapi_id, prep_col, min_standart, space):
     # ----------------------------------------------------------   
@@ -1003,6 +1003,7 @@ def xpN_set_pattern(fixtureapi_id, prep_col, min_standart, space):
         # ------------------------------------------------------
         ah_pattern = ""
 
+        # -----------------------------------------------------------------------------------------------------------
         if( asian_handicap_home_min_675 is not None and asian_handicap_away_min_675 is not None):
             ah_total_min_675 = asian_handicap_home_min_675 + asian_handicap_away_min_675
             if(ah_total_min_675 < min_standart):
@@ -1712,6 +1713,7 @@ def xpN_set_pattern(fixtureapi_id, prep_col, min_standart, space):
             gou_total_95 = goals_overunder_over_95 + goals_overunder_under_95
             if(gou_total_95 < min_standart):
                 gou_pattern += "95g"
+        # -----------------------------------------------------------------------------------------------------------
 
         # ------------------------------------------------------
         # ------------------------------------------------------
@@ -1728,7 +1730,9 @@ def xpN_set_pattern(fixtureapi_id, prep_col, min_standart, space):
         update_3 += " where fixtureapi_id = '" + str(fixtureapi_id) + "' "
         # ------------------------------------------------------
         mycursor.execute(update_3)
-        mydb.commit()   
+        mydb.commit()  
+        mycursor.close()
+        mydb.close()   
         # ------------------------------------------------------ 
         print(space + "> fixtureapi_id = " + str(fixtureapi_id), flush=True) 
         # ------------------------------------------------------

@@ -53,6 +53,8 @@ def fV_insert_new(venueapi_id, name, city, space):
         print(space + "football_venues INSERTED", flush=True)
         mycursor.execute(query_commit)
         mydb.commit()   
+        mycursor.close()
+        mydb.close()  
     # ----------------------------------------------------------  
     # ----------------------------------------------------------  
     # ----------------------------------------------------------  
